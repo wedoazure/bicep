@@ -30,7 +30,11 @@ export class ShowVisualizerCommand implements Command {
 
   public constructor(
     private readonly viewManager: BicepVisualizerViewManager
-  ) {}
+  ) {
+    if (!viewManager) {
+      throw new Error("viewManager should not be undefined or null");
+    }
+  }
 
   public async execute(
     documentUri?: vscode.Uri | undefined
@@ -44,7 +48,11 @@ export class ShowVisualizerToSideCommand implements Command {
 
   public constructor(
     private readonly viewManager: BicepVisualizerViewManager
-  ) {}
+  ) {
+    if (!viewManager) {
+      throw new Error("viewManager should not be undefined or null");
+    }
+  }
 
   public async execute(
     documentUri?: vscode.Uri | undefined

@@ -11,7 +11,8 @@
                 "--extensionDevelopmentPath=${workspaceRoot}/src/vscode-bicep"
             ],
             "env": {
-                "BICEP_LANGUAGE_SERVER_PATH": "${workspaceRoot}/src/Bicep.LangServer/bin/Debug/net5.0/Bicep.LangServer.dll"
+                "BICEP_LANGUAGE_SERVER_PATH": "${workspaceRoot}/src/Bicep.LangServer/bin/Debug/net5.0/Bicep.LangServer.dll",
+                "DEBUGTELEMETRY": "verbose", // 1=quiet (don't send); verbose=see debug telemetry in console (don't send); 0=normal (send telemetry, don't show)
             },
             "stopOnEntry": false,
             "sourceMaps": true,

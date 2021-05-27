@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-import vscode from "vscode";
+import { registerCommand } from "vscode-azureextensionui";
 
 import { Disposable } from "../utils/disposable";
 import { Command } from "./types";
 
 export class CommandManager extends Disposable {
   public registerCommand<T extends Command>(command: T): void {
-    this.register(
-      vscode.commands.registerCommand(command.id, command.execute, command)
-    );
+    registerCommand(command.id, command.execute.bind(command))
   }
 
   public registerCommands<T extends [Command, ...Command[]]>(

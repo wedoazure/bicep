@@ -10,7 +10,11 @@ export class ShowSourceCommand implements Command {
 
   public constructor(
     private readonly viewManager: BicepVisualizerViewManager
-  ) {}
+  ) {
+    if (!viewManager) {
+      throw new Error("viewManager should not be undefined or null");
+    }
+  }
 
   public async execute(): Promise<vscode.TextEditor | undefined> {
     if (this.viewManager.activeDocumentUri) {
