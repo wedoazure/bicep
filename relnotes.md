@@ -2,10 +2,14 @@
 
 Bicep team:
 * Add list method call on Azure resource references (#3430)
+  - instead of `listKeys(stg.id, stg.apiVersion)`, can now do `stg.listKeys()`
 * Add support for JSON literal string conversion (#3510)
+  - provides type awareness/intellisense for json strings. Try `json(loadTextContent('stuff.json'))`.
 * More complete & accurate Azure resource types (#3591)
+  - should no longer see cryptic type names. May notice more type warnings that were not caught earlier.
 * Add support for using local json templates as modules (#3367)
 * Add support for object body completion snippets (#3254)
+  - the `required-properties` completion shows up in more places.
 
 @miqm
 * Functions to include file's content as string or entire file as base64 (#2501)
