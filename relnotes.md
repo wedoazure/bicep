@@ -3,6 +3,7 @@
 Bicep team:
 * Add list method call on Azure resource references (#3430)
   - instead of `listKeys(stg.id, stg.apiVersion)`, can now do `stg.listKeys()`
+  - intellisense for these functions is not yet available, but will be addressed with #667 at a later date.
 * Add support for JSON literal string conversion (#3510)
   - provides type awareness/intellisense for json strings. Try `json(loadTextContent('stuff.json'))`.
 * More complete & accurate Azure resource types (#3591)
