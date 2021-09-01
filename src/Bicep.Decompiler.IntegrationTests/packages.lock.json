@@ -35,9 +35,9 @@
       },
       "MSTest.TestAdapter": {
         "type": "Direct",
-        "requested": "[2.2.3, )",
-        "resolved": "2.2.3",
-        "contentHash": "Xxc6+JyELKOmM46CYrHxL9f2LMZGnx1Neh0dr52THZbmVTwlJM1tj0U5RQ50G+wxsfsU8ZfR1HAUugc+64b6TA==",
+        "requested": "[2.2.6, )",
+        "resolved": "2.2.6",
+        "contentHash": "2z5XVBednseou2LXUgtnbkE9PNz0eFZaYyaJfI6VAHaeAx79gk3BE/Sjv6x3AnrzySzhHrVsS9Jr3z7sI7w0XA==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.TextWriterTraceListener": "4.3.0"
@@ -45,9 +45,9 @@
       },
       "MSTest.TestFramework": {
         "type": "Direct",
-        "requested": "[2.2.5, )",
-        "resolved": "2.2.5",
-        "contentHash": "7PQH0yJoQO6bp6kHgVoTowtQZyQilftL64/pxeDzi15vm3UewzRZz74QssTaOi1otA6j2/lxFTEMJk/+HY/apQ==",
+        "requested": "[2.2.6, )",
+        "resolved": "2.2.6",
+        "contentHash": "sKE9tr1lATjPZAQOFTWvhXCrLvaj0A48rr0ROhtk11BTGgZTkDNytULbOud+3NjZDSOKq7PNot2UZOP1MKd1iA==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.TextWriterTraceListener": "4.3.0"
@@ -2238,8 +2238,8 @@
           "DiffPlex": "1.7.0",
           "FluentAssertions": "5.10.3",
           "JsonDiffPatch.Net": "2.3.0",
-          "MSTest.TestAdapter": "2.2.3",
-          "MSTest.TestFramework": "2.2.5",
+          "MSTest.TestAdapter": "2.2.6",
+          "MSTest.TestFramework": "2.2.6",
           "Microsoft.NET.Test.Sdk": "16.10.0",
           "Microsoft.PowerShell.SDK": "7.1.3",
           "Moq": "4.16.1",
