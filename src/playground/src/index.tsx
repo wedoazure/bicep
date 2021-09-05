@@ -6,22 +6,13 @@ import { Container, Row, Spinner } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import './index.css';
-import { initializeInterop } from './lspInterop';
-import { Playground } from './playground';
+import { initializeInterop } from './helpers/lspInterop';
+import { Playground } from './components/Playground';
+import { createLanguageClient } from './helpers/client';
 
 ReactDOM.render(
-  <Container className="d-flex vh-100">
-    <Row className="m-auto align-self-center">
-      <Spinner animation="border" variant="light" />
-    </Row>
-  </Container>,
+  <div className="app-container">
+    <Playground />
+  </div>,
   document.getElementById('root')
 );
-
-initializeInterop(self)
-  .then(() => ReactDOM.render(
-    <div className="app-container">
-      <Playground/>
-    </div>,
-    document.getElementById('root')
-  ));

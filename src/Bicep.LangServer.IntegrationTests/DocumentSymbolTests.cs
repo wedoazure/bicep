@@ -7,9 +7,13 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
+using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using Bicep.LangServer.IntegrationTests.Assertions;
 using Bicep.LangServer.IntegrationTests.Helpers;
+using System.Threading;
+using Newtonsoft.Json.Linq;
+using System;
 
 namespace Bicep.LangServer.IntegrationTests
 {
@@ -72,6 +76,13 @@ output myOutput string = 'myOutput'
                     x.DocumentSymbol.Kind.Should().Be(SymbolKind.Interface);
                 }
             );
+
+            await client.ExecuteCommand(new ExecuteCommandParams {
+                Command = "compile",
+                Arguments = new JArray {
+                    documentUri.ToString()
+                },
+            }, CancellationToken.None);
 
             // client deletes the output and renames the resource
             client.TextDocument.DidChangeTextDocument(TextDocumentParamHelper.CreateDidChangeTextDocumentParams(documentUri, @"

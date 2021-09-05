@@ -8,7 +8,7 @@ using Bicep.Core.Diagnostics;
 using Bicep.Core.Text;
 using Bicep.Core.Emit;
 using Bicep.Core.Semantics;
-using Bicep.Wasm.LanguageHelpers;
+using Bicep.Core.Syntax;
 using System.Linq;
 using Bicep.Core.TypeSystem;
 using Bicep.Core.TypeSystem.Az;
@@ -18,175 +18,110 @@ using Bicep.Core.Extensions;
 using Bicep.Decompiler;
 using Bicep.Core.Modules;
 using Bicep.Core.Registry;
-using Bicep.Core.Syntax;
+using System.IO.Pipelines;
+using Bicep.LanguageServer;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Buffers;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reactive.Concurrency;
+using Bicep.Core.Resources;
+using Bicep.LanguageServer.Snippets;
 
 namespace Bicep.Wasm
 {
     public class Interop
     {
-        private static readonly IResourceTypeProvider resourceTypeProvider = AzResourceTypeProvider.CreateWithAzTypes();
+        private class TestResourceTypeLoader : IResourceTypeLoader
+        {
+            public IEnumerable<ResourceTypeReference> GetAvailableTypes()
+                => Enumerable.Empty<ResourceTypeReference>();
+
+            public ResourceType LoadType(ResourceTypeReference reference)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class TestSnippetsProvider : ISnippetsProvider
+        {
+            public IEnumerable<Snippet> GetModuleBodyCompletionSnippets(TypeSymbol typeSymbol)
+                => Enumerable.Empty<Snippet>();
+
+            public IEnumerable<Snippet> GetNestedResourceDeclarationSnippets(ResourceTypeReference resourceTypeReference)
+                => Enumerable.Empty<Snippet>();
+
+            public IEnumerable<Snippet> GetObjectBodyCompletionSnippets(TypeSymbol typeSymbol)
+                => Enumerable.Empty<Snippet>();
+
+            public IEnumerable<Snippet> GetResourceBodyCompletionSnippets(ResourceType resourceType, bool isExistingResource, bool isResourceNested)
+                => Enumerable.Empty<Snippet>();
+
+            public IEnumerable<Snippet> GetTopLevelNamedDeclarationSnippets()
+                => Enumerable.Empty<Snippet>();
+        }
 
         private readonly IJSRuntime jsRuntime;
+        private readonly Server server;
+        private readonly PipeWriter inputWriter;
+        private readonly PipeReader outputReader;
 
         public Interop(IJSRuntime jsRuntime)
         {
             this.jsRuntime = jsRuntime;
+            var inputPipe = new Pipe();
+            var outputPipe = new Pipe();
+
+            server = new Server(inputPipe.Reader, outputPipe.Writer, new Server.CreationOptions {
+                SnippetsProvider = new TestSnippetsProvider(),
+                FileResolver = new FileResolver(),
+                ResourceTypeProvider = AzResourceTypeProvider.CreateWithLoader(new TestResourceTypeLoader(), false),
+            }, options =>  options.Services.AddSingleton<IScheduler>(ImmediateScheduler.Instance));
+
+            inputWriter = inputPipe.Writer;
+            outputReader = outputPipe.Reader;
+
+#pragma warning disable VSTHRD110
+            Task.Run(() => server.RunAsync(CancellationToken.None));
+            Task.Run(() => ProcessInputStreamAsync());
+#pragma warning restore VSTHRD110
         }
 
         [JSInvokable]
-        public object CompileAndEmitDiagnostics(string content)
+        public async Task SendLspDataAsync(string jsonContent)
         {
-            var (output, diagnostics) = CompileInternal(content);
-            
-            return new
-            {
-                template = output,
-                diagnostics = diagnostics,
-            };
+            var cancelToken = CancellationToken.None;
+
+            await inputWriter.WriteAsync(Encoding.UTF8.GetBytes(jsonContent)).ConfigureAwait(false);
         }
 
-        public record DecompileResult(string? bicepFile, string? error);
-
-        [JSInvokable]
-        public DecompileResult Decompile(string jsonContent)
-        {
-            var jsonUri = new Uri("inmemory:///main.json");
-
-            var fileResolver = new InMemoryFileResolver(new Dictionary<Uri, string> {
-                [jsonUri] = jsonContent,
-            });
-
-            try
-            {
-                var bicepUri = PathHelper.ChangeToBicepExtension(jsonUri);
-                var decompiler = new TemplateDecompiler(resourceTypeProvider, fileResolver, new EmptyModuleRegistryProvider());
-                var (entrypointUri, filesToSave) = decompiler.DecompileFileWithModules(jsonUri, bicepUri);
-
-                return new DecompileResult(filesToSave[entrypointUri], null);
-            }
-            catch (Exception exception)
-            {
-                return new DecompileResult(null, exception.Message);
-            }
-        }
-
-        [JSInvokable]
-        public object GetSemanticTokensLegend()
-        {
-            var tokenTypes = Enum.GetValues(typeof(SemanticTokenType)).Cast<SemanticTokenType>();
-            var tokenStrings = tokenTypes.OrderBy(t => (int)t).Select(t => t.ToString().ToLowerInvariant());
-
-            return new {
-                tokenModifiers = new string[] { },
-                tokenTypes = tokenStrings.ToArray(),
-            };
-        }
-
-        [JSInvokable]
-        public object GetSemanticTokens(string content)
-        {
-            var compilation = GetCompilation(content);
-            var tokens = SemanticTokenVisitor.BuildSemanticTokens(compilation.SourceFileGrouping.EntryPoint);
-
-            var data = new List<int>();
-            SemanticToken? prevToken = null;
-            foreach (var token in tokens) {
-                if (prevToken == null) {
-                    data.Add(token.Line);
-                    data.Add(token.Character);
-                    data.Add(token.Length);
-                } else if (prevToken.Line != token.Line) {
-                    data.Add(token.Line - prevToken.Line);
-                    data.Add(token.Character);
-                    data.Add(token.Length);
-                } else {
-                    data.Add(0);
-                    data.Add(token.Character - prevToken.Character);
-                    data.Add(token.Length);
-                }
-
-                data.Add((int)token.TokenType);
-                data.Add(0);
-
-                prevToken = token;
-            }
-
-            return new {
-                data = data.ToArray(),
-            };
-        }
-
-        private static (string, IEnumerable<object>) CompileInternal(string content)
+        private async Task ProcessInputStreamAsync()
         {
             try
             {
-                var lineStarts = TextCoordinateConverter.GetLineStarts(content);
-                var compilation = GetCompilation(content);
-                var emitterSettings = new EmitterSettings(ThisAssembly.AssemblyFileVersion, enableSymbolicNames: false);
-                var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), emitterSettings);
-
-                // memory stream is not ideal for frequent large allocations
-                using var stream = new MemoryStream();
-                var emitResult = emitter.Emit(stream);
-
-                if (emitResult.Status != EmitStatus.Failed)
+                do
                 {
-                    // compilation was successful or had warnings - return the compiled template
-                    stream.Position = 0;
-                    return (ReadStreamToEnd(stream), emitResult.Diagnostics.Select(d => ToMonacoDiagnostic(d, lineStarts)));
-                }
+                    var result = await outputReader.ReadAsync(CancellationToken.None).ConfigureAwait(false);
+                    var buffer = result.Buffer;
 
-                // compilation failed
-                return ("Compilation failed!", emitResult.Diagnostics.Select(d => ToMonacoDiagnostic(d, lineStarts)));
+                    await jsRuntime.InvokeVoidAsync("ReceiveLspData", Encoding.UTF8.GetString(buffer.Slice(buffer.Start, buffer.End)));
+                    outputReader.AdvanceTo(buffer.End, buffer.End);
+
+                    // Stop reading if there's no more data coming.
+                    if (result.IsCompleted && buffer.IsEmpty)
+                    {
+                        break;
+                    }
+                    // TODO: Add cancellation token
+                } while (!CancellationToken.None.IsCancellationRequested);
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                return (exception.ToString(), Enumerable.Empty<object>());
+                // TODO: Needed?
+                await Console.Error.WriteLineAsync(e.Message);
+                await Console.Error.WriteLineAsync(e.StackTrace);
             }
         }
-
-        private static Compilation GetCompilation(string fileContents)
-        {
-            var fileUri = new Uri("inmemory:///main.bicep");
-            var workspace = new Workspace();
-            var sourceFile = SourceFileFactory.CreateSourceFile(fileUri, fileContents);
-            workspace.UpsertSourceFile(sourceFile);
-
-            var fileResolver = new FileResolver();
-            var dispatcher = new ModuleDispatcher(new EmptyModuleRegistryProvider());
-            var sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, dispatcher, workspace, fileUri);
-
-            return new Compilation(resourceTypeProvider, sourceFileGrouping);
-        }
-
-        private static string ReadStreamToEnd(Stream stream)
-        {
-            using var reader = new StreamReader(stream);
-            return reader.ReadToEnd();
-        }
-
-        private static object ToMonacoDiagnostic(IDiagnostic diagnostic, IReadOnlyList<int> lineStarts)
-        {
-            var (startLine, startChar) = TextCoordinateConverter.GetPosition(lineStarts, diagnostic.Span.Position);
-            var (endLine, endChar) = TextCoordinateConverter.GetPosition(lineStarts, diagnostic.GetEndPosition());
-
-            return new {
-                code = diagnostic.Code,
-                message = diagnostic.Message,
-                severity = ToMonacoSeverity(diagnostic.Level),
-                startLineNumber = startLine + 1,
-                startColumn = startChar + 1,
-                endLineNumber = endLine + 1,
-                endColumn = endChar + 1,
-            };
-        }
-
-        private static int ToMonacoSeverity(DiagnosticLevel level)
-            => level switch {
-                DiagnosticLevel.Info => 2,
-                DiagnosticLevel.Warning => 4,
-                DiagnosticLevel.Error => 8,
-                _ => throw new ArgumentException($"Unrecognized level {level}"),
-            };
     }
 }

@@ -4,7 +4,7 @@ import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
 import { version as buildVersion } from './package.json';
 import path from 'path';
 import exampleIndex from '../../docs/examples/index.json';
-import { Configuration } from 'webpack';
+import { Configuration, ProvidePlugin } from 'webpack';
 
 const config: Configuration = {
   entry: {
@@ -31,6 +31,19 @@ const config: Configuration = {
   },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
+    alias: {
+      'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
+    },
+    fallback: {
+      fs: false,
+      os: false,
+      child_process: false,
+      net: false,
+      crypto: false,
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer'),
+      path: false,
+    },
   },
   plugins: [
     new CopyPlugin({
@@ -41,13 +54,19 @@ const config: Configuration = {
         ...exampleIndex.map(({ filePath }) => ({ from: `../../docs/examples/${filePath}`, to: `./examples/${filePath}`})),
       ],
     }),
-    new HtmlWebpackPlugin({
+    new HtmlWebpackPlugin({ 
       title: `Bicep Playground ${buildVersion}`,
       favicon: `./src/favicon.ico`,
       template: `./src/index.html`,
     }),
     new MonacoWebpackPlugin({
       languages: ['json']
+    }),
+    new ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+    new ProvidePlugin({
+      process: 'process/browser',
     }),
   ],
   optimization: {
