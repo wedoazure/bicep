@@ -1,37 +1,29 @@
 import { BaseLanguageClient, CloseAction, createConnection, ErrorAction, MonacoLanguageClient, MonacoServices } from 'monaco-languageclient';
+import { createMessageConnection, StreamMessageReader, StreamMessageWriter } from 'vscode-jsonrpc';
 import { onLspData, sendLspData } from './lspInterop';
 import { Duplex } from 'stream';
-import * as monaco from 'monaco-editor';
-import { createMessageConnection } from 'monaco-languageclient/node_modules/vscode-jsonrpc';
+// @ts-expect-error
+import { CommandsRegistry } from 'monaco-editor/esm/vs/platform/commands/common/commands';
 
 function marshalToString(data : any, encoding: BufferEncoding | 'buffer') {
   return Buffer.isBuffer(data) ? data.toString(encoding === 'buffer' ? undefined : encoding) : typeof data === 'string' ? data : data.toString();
 }
 
-function createStream(): [NodeJS.ReadableStream, NodeJS.WritableStream] {
+function createStream() {
   const output = new Duplex({
-    write: (data, encoding, next) => {
+    write: (data, encoding, cb) => {
       sendLspData(marshalToString(data, encoding));
-      next();
-    },
-  });
-
-  onLspData(data => {
-    try {
-      output.push(marshalToString(data, 'utf-8'), 'utf-8');
-      output.push(null);
-    }
-    catch (e) {
-      console.error(e);
+      cb();
     }
   });
 
-  return [output, output];
+  onLspData(data => output.push(marshalToString(data, 'utf8')));
+
+  return [new StreamMessageReader(output, 'utf8'), new StreamMessageWriter(output, 'utf8')] as const;
 }
 
 export async function createLanguageClient(): Promise<BaseLanguageClient> {
-  (self as any)['monaco'] = monaco;
-  MonacoServices.install(monaco);
+  MonacoServices.install(CommandsRegistry);
 
   const [reader, writer] = createStream();
   const messageConnection = createMessageConnection(reader, writer);

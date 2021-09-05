@@ -123,14 +123,12 @@ export const BicepEditor: React.FC<Props> = (props) => {
   const handleContentChange = (text: string) => {
     props.onBicepChange(text);
 
-    /*
     client.sendRequest('workspace/executeCommand', {
       command: 'compile',
       arguments: [
         modelUri,
       ]
     });
-    */
   }
 
   const handleEditorDidMount = (editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) => {

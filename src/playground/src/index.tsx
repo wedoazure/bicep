@@ -8,9 +8,6 @@ import { initializeInterop } from './helpers/lspInterop';
 import { Playground } from './components/Playground';
 import { createLanguageClient } from './helpers/client';
 
-// polyfill necessary for stream API
-require('setimmediate');
-
 ReactDOM.render(
   <Container className="d-flex vh-100">
     <Row className="m-auto align-self-center">

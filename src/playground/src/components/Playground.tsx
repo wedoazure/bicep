@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup, Col, Container, Dropdown, FormControl, Nav, Navbar, NavLink, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap';
 import { BaseLanguageClient } from 'monaco-languageclient';
@@ -104,7 +102,7 @@ export const Playground : React.FC<Props> = (props) => {
     <input type="file" ref={uploadInputRef} style={{ display: 'none' }} onChange={e => handleDecompileClick(e.currentTarget.files[0])} accept="application/json" multiple={false} />
     <Navbar bg="dark" variant="dark">
       <Navbar.Brand>Bicep Playground</Navbar.Brand>
-      <Nav className="ms-auto">
+      <Nav className="ml-auto">
         <OverlayTrigger placement="bottom" overlay={createTooltip('Copy a shareable link to clipboard')}>
           <Button size="sm" variant="primary" className="mx-1" onClick={handlCopyClick}>{copied ? 'Copied' : 'Copy Link'}</Button>
         </OverlayTrigger>

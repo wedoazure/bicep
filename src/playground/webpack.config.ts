@@ -4,9 +4,8 @@ import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
 import { version as buildVersion } from './package.json';
 import path from 'path';
 import exampleIndex from '../../docs/examples/index.json';
-import { Configuration, ProvidePlugin } from 'webpack';
 
-const config: Configuration = {
+module.exports = {
   entry: {
     "main": './src/index.tsx',
   },
@@ -29,21 +28,16 @@ const config: Configuration = {
       use: ['file-loader']
     }]
   },
+  node: {
+    fs: 'empty',
+    child_process: 'empty',
+    net: 'empty',
+    crypto: 'empty'
+  },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
     alias: {
       'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
-    },
-    fallback: {
-      fs: false,
-      os: false,
-      child_process: false,
-      net: false,
-      crypto: false,
-      stream: require.resolve('stream-browserify'),
-      buffer: require.resolve('buffer'),
-      path: false,
-      setImmediate: require.resolve('setimmediate'),
     },
   },
   plugins: [
@@ -55,7 +49,7 @@ const config: Configuration = {
         ...exampleIndex.map(({ filePath }) => ({ from: `../../docs/examples/${filePath}`, to: `./examples/${filePath}`})),
       ],
     }),
-    new HtmlWebpackPlugin({ 
+    new HtmlWebpackPlugin({
       title: `Bicep Playground ${buildVersion}`,
       favicon: `./src/favicon.ico`,
       template: `./src/index.html`,
@@ -63,17 +57,11 @@ const config: Configuration = {
     new MonacoWebpackPlugin({
       languages: ['json']
     }),
-    new ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
-    }),
-    new ProvidePlugin({
-      process: 'process/browser',
-    }),
   ],
-  optimization: {
-    // to avoid minimizing files under _framework (Blazor JS files), just turn off minification entirely.
-    minimize: false,
-  },
+  devServer: {
+    contentBase: path.join(__dirname, 'dist'),
+    compress: true,
+    open: true,
+    port: 9000
+  }
 };
-
-module.exports = config;
