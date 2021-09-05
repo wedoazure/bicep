@@ -1,39 +1,8 @@
-import { BaseLanguageClient, CloseAction, createConnection, DataCallback, Disposable, ErrorAction, Event, Message, MessageReader, MessageWriter, MonacoLanguageClient, MonacoServices, PartialMessageInfo } from 'monaco-languageclient';
+import { BaseLanguageClient, CloseAction, createConnection, ErrorAction, MonacoLanguageClient, MonacoServices } from 'monaco-languageclient';
 import { onLspData, sendLspData } from './lspInterop';
 import { Duplex } from 'stream';
-import { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor';
 import { createMessageConnection } from 'monaco-languageclient/node_modules/vscode-jsonrpc';
-
-class TestReader implements MessageReader {
-  private readonly output: Duplex;
-  constructor(output: Duplex) {
-    this.output = output;
-  }
-  onError: Event<Error>;
-  onClose: Event<void>;
-  onPartialMessage: Event<PartialMessageInfo>;
-  dispose(): void {
-    throw new Error('Method not implemented.');
-  }
-  listen(callback: DataCallback): Disposable {
-    this.output
-    throw new Error('Method not implemented.');
-  }
-}
-
-class TestWriter implements MessageWriter {
-  private readonly output: Duplex;
-  constructor(output: Duplex) {
-    this.output = output;
-  }
-  onError: Event<[Error, Message, number]>;
-  onClose: Event<void>;
-  write(msg: Message): void {
-    this.output.write(msg.jsonrpc, 'utf-8');
-  }
-  dispose(): void { }
-}
 
 function marshalToString(data : any, encoding: BufferEncoding | 'buffer') {
   return Buffer.isBuffer(data) ? data.toString(encoding === 'buffer' ? undefined : encoding) : typeof data === 'string' ? data : data.toString();
@@ -41,20 +10,28 @@ function marshalToString(data : any, encoding: BufferEncoding | 'buffer') {
 
 function createStream(): [NodeJS.ReadableStream, NodeJS.WritableStream] {
   const output = new Duplex({
-    write: (data, encoding, cb) => {
+    write: (data, encoding, next) => {
       sendLspData(marshalToString(data, encoding));
-      cb();
-    }
+      next();
+    },
   });
 
-  onLspData(data => output.push(marshalToString(data, 'utf8')));
+  onLspData(data => {
+    try {
+      output.push(marshalToString(data, 'utf-8'), 'utf-8');
+      output.push(null);
+    }
+    catch (e) {
+      console.error(e);
+    }
+  });
 
   return [output, output];
 }
 
-export async function createLanguageClient(editor: editor.IStandaloneCodeEditor): Promise<BaseLanguageClient> {
+export async function createLanguageClient(): Promise<BaseLanguageClient> {
   (self as any)['monaco'] = monaco;
-  MonacoServices.install(editor);
+  MonacoServices.install(monaco);
 
   const [reader, writer] = createStream();
   const messageConnection = createMessageConnection(reader, writer);

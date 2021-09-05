@@ -2,10 +2,9 @@ import * as monacoEditor from 'monaco-editor';
 import { BaseLanguageClient } from 'monaco-languageclient';
 import React, { useState } from 'react';
 import MonacoEditor from 'react-monaco-editor';
-import { createLanguageClient } from '../helpers/client';
-import { getSemanticTokensLegend, initializeInterop } from '../helpers/lspInterop';
 
 interface Props {
+  client: BaseLanguageClient,
   initialContent: string,
   onBicepChange: (bicepContent: string) => void,
   onJsonChange: (jsonContent: string) => void,
@@ -39,7 +38,34 @@ function configureEditorForBicep(client: BaseLanguageClient, editor: monacoEdito
   // TODO use the below once monaco-languageclient has proper support for semantic tokens
   // client.registerProposedFeatures();
   monaco.languages.registerDocumentSemanticTokensProvider('bicep', {
-    getLegend: () => getSemanticTokensLegend(),
+    getLegend: () => ({
+      tokenTypes: [
+        'comment',
+        'enummember',
+        'event',
+        'modifier',
+        'label',
+        'parameter',
+        'variable',
+        'property',
+        'member',
+        'function',
+        'typeparameter',
+        'macro',
+        'interface',
+        'enum',
+        'string',
+        'number',
+        'regexp',
+        'operator',
+        'keyword',
+        'type',
+        'struct',
+        'class',
+        'namespace',
+      ],
+      tokenModifiers: []
+    }),
     provideDocumentSemanticTokens: async (model, lastResultId, token) => {
       return await client.sendRequest('textDocument/semanticTokens/full', { textDocument: { uri: modelUri, } });
     },
@@ -89,39 +115,29 @@ function configureEditorForBicep(client: BaseLanguageClient, editor: monacoEdito
   };
 }
 
-async function initializeAndCreateClient(editor: monacoEditor.editor.IStandaloneCodeEditor) {
-  await initializeInterop(self);
-  const client = await createLanguageClient(editor);
-
-  return client;
-}
-
 export const BicepEditor: React.FC<Props> = (props) => {
+  const { client } = props;
   const [editor, setEditor] = useState<monacoEditor.editor.IStandaloneCodeEditor>();
   const [initialContent, setinitialContent] = useState('');
-  const [client, setClient] = useState<BaseLanguageClient | null>();
 
   const handleContentChange = (text: string) => {
     props.onBicepChange(text);
 
+    /*
     client.sendRequest('workspace/executeCommand', {
       command: 'compile',
       arguments: [
         modelUri,
       ]
     });
+    */
   }
 
   const handleEditorDidMount = (editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) => {
     setEditor(editor);
-
-    initializeAndCreateClient(editor).then(newClient => {
-      setClient(newClient);
-      
-      configureEditorForBicep(client, editor, monaco);
-      client.onNotification("compiled", ({ template }) => props.onJsonChange(template ?? ''));
-    });
-  };
+    configureEditorForBicep(client, editor, monaco);
+    client.onNotification("compiled", ({ template }) => props.onJsonChange(template ?? ''));
+  }
 
   if (editor && initialContent != props.initialContent) {
     setinitialContent(props.initialContent);

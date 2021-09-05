@@ -43,6 +43,7 @@ const config: Configuration = {
       stream: require.resolve('stream-browserify'),
       buffer: require.resolve('buffer'),
       path: false,
+      setImmediate: require.resolve('setimmediate'),
     },
   },
   plugins: [

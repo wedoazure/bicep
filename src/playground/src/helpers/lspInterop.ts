@@ -4,7 +4,7 @@ let interop: any;
 
 export function initializeInterop(self: any): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
-    self['BicepInitialize'] = (newInterop: any) => {
+    self['LspInitialized'] = (newInterop: any) => {
       interop = newInterop;
       resolve(true);
     }
@@ -13,18 +13,14 @@ export function initializeInterop(self: any): Promise<boolean> {
   });
 }
 
-export function getSemanticTokensLegend(): languages.SemanticTokensLegend {
-  return interop.invokeMethod('GetSemanticTokensLegend');
-}
-
 export async function sendLspData(message: string) {
-  // console.log(message);
+  console.log(message);
   return await interop.invokeMethodAsync('SendLspDataAsync', message);
 }
 
 export function onLspData(callback: (message: string | Buffer) => void) {
   (self as any)['ReceiveLspData'] = (message: string) => {
-    // console.log(message);
+    console.log(message);
     callback(message);
   }
 }

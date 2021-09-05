@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using BlazorWorker.BackgroundServiceFactory;
+using BlazorWorker.Core;
 
 namespace Bicep.Wasm
 {
@@ -18,9 +20,11 @@ namespace Bicep.Wasm
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
+            builder.Services.AddWorkerFactory();
+            builder.Services.AddSingleton<WorkerHost>();
 
-            var jsRuntime = builder.Services.BuildServiceProvider().GetService<IJSRuntime>() ?? throw new InvalidOperationException("Unable to obtain JS runtime.");
-            await jsRuntime.InvokeAsync<object>("BicepInitialize", DotNetObjectReference.Create(new Interop(jsRuntime)));
+            var workerHost = builder.Services.BuildServiceProvider().GetService<WorkerHost>() ?? throw new InvalidOperationException($"Failed to load {nameof(WorkerHost)}.");
+            await workerHost.InitializeAsync();
 
             await builder.Build().RunAsync();
         }

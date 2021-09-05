@@ -28,10 +28,11 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Reactive.Concurrency;
 using Bicep.Core.Resources;
 using Bicep.LanguageServer.Snippets;
+using BlazorWorker.WorkerCore;
 
 namespace Bicep.Wasm
 {
-    public class Interop
+    public class Worker
     {
         private class TestResourceTypeLoader : IResourceTypeLoader
         {
@@ -62,14 +63,16 @@ namespace Bicep.Wasm
                 => Enumerable.Empty<Snippet>();
         }
 
-        private readonly IJSRuntime jsRuntime;
         private readonly Server server;
         private readonly PipeWriter inputWriter;
         private readonly PipeReader outputReader;
+        private readonly IWorkerMessageService messageService;
 
-        public Interop(IJSRuntime jsRuntime)
+        public Worker(IWorkerMessageService messageService)
         {
-            this.jsRuntime = jsRuntime;
+            this.messageService = messageService;
+            this.messageService.IncomingMessage += OnMessage;
+
             var inputPipe = new Pipe();
             var outputPipe = new Pipe();
 
@@ -88,12 +91,12 @@ namespace Bicep.Wasm
 #pragma warning restore VSTHRD110
         }
 
-        [JSInvokable]
-        public async Task SendLspDataAsync(string jsonContent)
+        public void OnMessage(object? sender, string message)
         {
-            var cancelToken = CancellationToken.None;
-
-            await inputWriter.WriteAsync(Encoding.UTF8.GetBytes(jsonContent)).ConfigureAwait(false);
+            if (message.StartsWith("SND:"))
+            {
+                inputWriter.WriteAsync(Encoding.UTF8.GetBytes(message.Substring(4))).ConfigureAwait(false);
+            }
         }
 
         private async Task ProcessInputStreamAsync()
@@ -105,7 +108,8 @@ namespace Bicep.Wasm
                     var result = await outputReader.ReadAsync(CancellationToken.None).ConfigureAwait(false);
                     var buffer = result.Buffer;
 
-                    await jsRuntime.InvokeVoidAsync("ReceiveLspData", Encoding.UTF8.GetString(buffer.Slice(buffer.Start, buffer.End)));
+                    var message = Encoding.UTF8.GetString(buffer.Slice(buffer.Start, buffer.End));
+                    await messageService.PostMessageAsync($"RCV:{message}");
                     outputReader.AdvanceTo(buffer.End, buffer.End);
 
                     // Stop reading if there's no more data coming.

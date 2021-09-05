@@ -11,9 +11,12 @@ import { BicepEditor } from './bicepEditor';
 import { copyShareLinkToClipboard, handleShareLink } from '../helpers/utils';
 import { decompile } from '../helpers/lspInterop';
 
-interface Props { }
+interface Props {
+  client: BaseLanguageClient,
+}
 
 export const Playground : React.FC<Props> = (props) => {
+  const { client } = props;
   const [jsonContent, setJsonContent] = useState('');
   const [bicepContent, setBicepContent] = useState('');
   const [initialContent, setInitialContent] = useState('');
@@ -134,7 +137,7 @@ export const Playground : React.FC<Props> = (props) => {
       </Container> :
       <>
         <div className="playground-editorpane">
-          <BicepEditor initialContent={initialContent} onBicepChange={setBicepContent} onJsonChange={setJsonContent} />
+          <BicepEditor client={client} initialContent={initialContent} onBicepChange={setBicepContent} onJsonChange={setJsonContent} />
         </div>
         <div className="playground-editorpane">
           <JsonEditor content={jsonContent} />
