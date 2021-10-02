@@ -41,6 +41,8 @@ namespace Bicep.Core
         public const string ResourceKeyword = "resource";
         public const string ModuleKeyword = "module";
         public const string ExistingKeyword = "existing";
+        public const string ImportKeyword = "import";
+        public const string FromKeyword = "from";
 
         public const string IfKeyword = "if";
         public const string ForKeyword = "for";
@@ -50,6 +52,10 @@ namespace Bicep.Core
         public const string TargetScopeTypeManagementGroup = "managementGroup";
         public const string TargetScopeTypeSubscription = "subscription";
         public const string TargetScopeTypeResourceGroup = "resourceGroup";
+
+        public const string BicepConfigurationFileName = "bicepconfig.json";
+
+        public const string DisableLinterRuleCommandName = "bicep.DisableLinterRule";
 
         public static readonly Regex ArmTemplateSchemaRegex = new(@"https?:\/\/schema\.management\.azure\.com\/schemas\/([^""\/]+\/[a-zA-Z]*[dD]eploymentTemplate\.json)#?");
 
@@ -72,13 +78,22 @@ namespace Bicep.Core
             [NullKeyword] = TokenType.NullKeyword
         }.ToImmutableDictionary();
 
+        // Decorators
         public const string ParameterAllowedPropertyName = "allowed";
-        public const string ParameterDefaultPropertyName = "default";
         public const string ParameterSecurePropertyName = "secure";
+        public const string ParameterMinValuePropertyName = "minValue";
+        public const string ParameterMaxValuePropertyName = "maxValue";
+        public const string ParameterMinLengthPropertyName = "minLength";
+        public const string ParameterMaxLengthPropertyName = "maxLength";
+        public const string ParameterMetadataPropertyName = "metadata";
+        public const string MetadataDescriptionPropertyName = "description";
+        public const string BatchSizePropertyName = "batchSize";
 
+        // module properties
         public const string ModuleParamsPropertyName = "params";
         public const string ModuleOutputsPropertyName = "outputs";
 
+        // resource properties
         public const string ResourceIdPropertyName = "id";
         public const string ResourceLocationPropertyName = "location";
         public const string ResourceNamePropertyName = "name";
@@ -87,6 +102,8 @@ namespace Bicep.Core
         public const string ResourceScopePropertyName = "scope";
         public const string ResourceParentPropertyName = "parent";
         public const string ResourceDependsOnPropertyName = "dependsOn";
+
+        // types
         public const string TypeNameString = "string";
         public const string TypeNameModule = "module";
 

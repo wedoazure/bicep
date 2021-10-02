@@ -44,17 +44,17 @@ resource rg 'Microsoft.Resources/resourceGroups@2020-06-01' = {
 //@[0:1)   RightBrace |}|
 //@[1:3) NewLine |\n\n|
 
-module appPlanDeploy 'oci:mock-registry-one.invalid/demo/plan:v2' = {
-//@[0:144) ModuleDeclarationSyntax
+module appPlanDeploy 'br:mock-registry-one.invalid/demo/plan:v2' = {
+//@[0:143) ModuleDeclarationSyntax
 //@[0:6)  Identifier |module|
 //@[7:20)  IdentifierSyntax
 //@[7:20)   Identifier |appPlanDeploy|
-//@[21:65)  StringSyntax
-//@[21:65)   StringComplete |'oci:mock-registry-one.invalid/demo/plan:v2'|
-//@[66:67)  Assignment |=|
-//@[68:144)  ObjectSyntax
-//@[68:69)   LeftBrace |{|
-//@[69:70)   NewLine |\n|
+//@[21:64)  StringSyntax
+//@[21:64)   StringComplete |'br:mock-registry-one.invalid/demo/plan:v2'|
+//@[65:66)  Assignment |=|
+//@[67:143)  ObjectSyntax
+//@[67:68)   LeftBrace |{|
+//@[68:69)   NewLine |\n|
   name: 'planDeploy'
 //@[2:20)   ObjectPropertySyntax
 //@[2:6)    IdentifierSyntax
@@ -156,28 +156,28 @@ var websites = [
 //@[0:1)   RightSquare |]|
 //@[1:3) NewLine |\n\n|
 
-module siteDeploy 'oci:mock-registry-two.invalid/demo/site:v3' = [for site in websites: {
-//@[0:288) ModuleDeclarationSyntax
+module siteDeploy 'br:mock-registry-two.invalid/demo/site:v3' = [for site in websites: {
+//@[0:287) ModuleDeclarationSyntax
 //@[0:6)  Identifier |module|
 //@[7:17)  IdentifierSyntax
 //@[7:17)   Identifier |siteDeploy|
-//@[18:62)  StringSyntax
-//@[18:62)   StringComplete |'oci:mock-registry-two.invalid/demo/site:v3'|
-//@[63:64)  Assignment |=|
-//@[65:288)  ForSyntax
-//@[65:66)   LeftSquare |[|
-//@[66:69)   Identifier |for|
-//@[70:74)   LocalVariableSyntax
-//@[70:74)    IdentifierSyntax
-//@[70:74)     Identifier |site|
-//@[75:77)   Identifier |in|
-//@[78:86)   VariableAccessSyntax
-//@[78:86)    IdentifierSyntax
-//@[78:86)     Identifier |websites|
-//@[86:87)   Colon |:|
-//@[88:287)   ObjectSyntax
-//@[88:89)    LeftBrace |{|
-//@[89:90)    NewLine |\n|
+//@[18:61)  StringSyntax
+//@[18:61)   StringComplete |'br:mock-registry-two.invalid/demo/site:v3'|
+//@[62:63)  Assignment |=|
+//@[64:287)  ForSyntax
+//@[64:65)   LeftSquare |[|
+//@[65:68)   Identifier |for|
+//@[69:73)   LocalVariableSyntax
+//@[69:73)    IdentifierSyntax
+//@[69:73)     Identifier |site|
+//@[74:76)   Identifier |in|
+//@[77:85)   VariableAccessSyntax
+//@[77:85)    IdentifierSyntax
+//@[77:85)     Identifier |websites|
+//@[85:86)   Colon |:|
+//@[87:286)   ObjectSyntax
+//@[87:88)    LeftBrace |{|
+//@[88:89)    NewLine |\n|
   name: '${site.name}siteDeploy'
 //@[2:32)    ObjectPropertySyntax
 //@[2:6)     IdentifierSyntax
@@ -515,6 +515,259 @@ output siteUrls array = [for (site, i) in websites: siteDeploy[i].outputs.siteUr
 //@[74:81)    IdentifierSyntax
 //@[74:81)     Identifier |siteUrl|
 //@[81:82)   RightSquare |]|
-//@[82:83) NewLine |\n|
+//@[82:84) NewLine |\n\n|
 
-//@[0:0) EndOfFile ||
+module passthroughPort 'br:localhost:5000/passthrough/port:v1' = {
+//@[0:128) ModuleDeclarationSyntax
+//@[0:6)  Identifier |module|
+//@[7:22)  IdentifierSyntax
+//@[7:22)   Identifier |passthroughPort|
+//@[23:62)  StringSyntax
+//@[23:62)   StringComplete |'br:localhost:5000/passthrough/port:v1'|
+//@[63:64)  Assignment |=|
+//@[65:128)  ObjectSyntax
+//@[65:66)   LeftBrace |{|
+//@[66:67)   NewLine |\n|
+  scope: rg
+//@[2:11)   ObjectPropertySyntax
+//@[2:7)    IdentifierSyntax
+//@[2:7)     Identifier |scope|
+//@[7:8)    Colon |:|
+//@[9:11)    VariableAccessSyntax
+//@[9:11)     IdentifierSyntax
+//@[9:11)      Identifier |rg|
+//@[11:12)   NewLine |\n|
+  name: 'port'
+//@[2:14)   ObjectPropertySyntax
+//@[2:6)    IdentifierSyntax
+//@[2:6)     Identifier |name|
+//@[6:7)    Colon |:|
+//@[8:14)    StringSyntax
+//@[8:14)     StringComplete |'port'|
+//@[14:15)   NewLine |\n|
+  params: {
+//@[2:32)   ObjectPropertySyntax
+//@[2:8)    IdentifierSyntax
+//@[2:8)     Identifier |params|
+//@[8:9)    Colon |:|
+//@[10:32)    ObjectSyntax
+//@[10:11)     LeftBrace |{|
+//@[11:12)     NewLine |\n|
+    port: 'test'
+//@[4:16)     ObjectPropertySyntax
+//@[4:8)      IdentifierSyntax
+//@[4:8)       Identifier |port|
+//@[8:9)      Colon |:|
+//@[10:16)      StringSyntax
+//@[10:16)       StringComplete |'test'|
+//@[16:17)     NewLine |\n|
+  }
+//@[2:3)     RightBrace |}|
+//@[3:4)   NewLine |\n|
+}
+//@[0:1)   RightBrace |}|
+//@[1:3) NewLine |\n\n|
+
+module ipv4 'br:127.0.0.1/passthrough/ipv4:v1' = {
+//@[0:112) ModuleDeclarationSyntax
+//@[0:6)  Identifier |module|
+//@[7:11)  IdentifierSyntax
+//@[7:11)   Identifier |ipv4|
+//@[12:46)  StringSyntax
+//@[12:46)   StringComplete |'br:127.0.0.1/passthrough/ipv4:v1'|
+//@[47:48)  Assignment |=|
+//@[49:112)  ObjectSyntax
+//@[49:50)   LeftBrace |{|
+//@[50:51)   NewLine |\n|
+  scope: rg
+//@[2:11)   ObjectPropertySyntax
+//@[2:7)    IdentifierSyntax
+//@[2:7)     Identifier |scope|
+//@[7:8)    Colon |:|
+//@[9:11)    VariableAccessSyntax
+//@[9:11)     IdentifierSyntax
+//@[9:11)      Identifier |rg|
+//@[11:12)   NewLine |\n|
+  name: 'ipv4'
+//@[2:14)   ObjectPropertySyntax
+//@[2:6)    IdentifierSyntax
+//@[2:6)     Identifier |name|
+//@[6:7)    Colon |:|
+//@[8:14)    StringSyntax
+//@[8:14)     StringComplete |'ipv4'|
+//@[14:15)   NewLine |\n|
+  params: {
+//@[2:32)   ObjectPropertySyntax
+//@[2:8)    IdentifierSyntax
+//@[2:8)     Identifier |params|
+//@[8:9)    Colon |:|
+//@[10:32)    ObjectSyntax
+//@[10:11)     LeftBrace |{|
+//@[11:12)     NewLine |\n|
+    ipv4: 'test'
+//@[4:16)     ObjectPropertySyntax
+//@[4:8)      IdentifierSyntax
+//@[4:8)       Identifier |ipv4|
+//@[8:9)      Colon |:|
+//@[10:16)      StringSyntax
+//@[10:16)       StringComplete |'test'|
+//@[16:17)     NewLine |\n|
+  }
+//@[2:3)     RightBrace |}|
+//@[3:4)   NewLine |\n|
+}
+//@[0:1)   RightBrace |}|
+//@[1:3) NewLine |\n\n|
+
+module ipv4port 'br:127.0.0.1:5000/passthrough/ipv4port:v1' = {
+//@[0:133) ModuleDeclarationSyntax
+//@[0:6)  Identifier |module|
+//@[7:15)  IdentifierSyntax
+//@[7:15)   Identifier |ipv4port|
+//@[16:59)  StringSyntax
+//@[16:59)   StringComplete |'br:127.0.0.1:5000/passthrough/ipv4port:v1'|
+//@[60:61)  Assignment |=|
+//@[62:133)  ObjectSyntax
+//@[62:63)   LeftBrace |{|
+//@[63:64)   NewLine |\n|
+  scope: rg
+//@[2:11)   ObjectPropertySyntax
+//@[2:7)    IdentifierSyntax
+//@[2:7)     Identifier |scope|
+//@[7:8)    Colon |:|
+//@[9:11)    VariableAccessSyntax
+//@[9:11)     IdentifierSyntax
+//@[9:11)      Identifier |rg|
+//@[11:12)   NewLine |\n|
+  name: 'ipv4port'
+//@[2:18)   ObjectPropertySyntax
+//@[2:6)    IdentifierSyntax
+//@[2:6)     Identifier |name|
+//@[6:7)    Colon |:|
+//@[8:18)    StringSyntax
+//@[8:18)     StringComplete |'ipv4port'|
+//@[18:19)   NewLine |\n|
+  params: {
+//@[2:36)   ObjectPropertySyntax
+//@[2:8)    IdentifierSyntax
+//@[2:8)     Identifier |params|
+//@[8:9)    Colon |:|
+//@[10:36)    ObjectSyntax
+//@[10:11)     LeftBrace |{|
+//@[11:12)     NewLine |\n|
+    ipv4port: 'test'
+//@[4:20)     ObjectPropertySyntax
+//@[4:12)      IdentifierSyntax
+//@[4:12)       Identifier |ipv4port|
+//@[12:13)      Colon |:|
+//@[14:20)      StringSyntax
+//@[14:20)       StringComplete |'test'|
+//@[20:21)     NewLine |\n|
+  }
+//@[2:3)     RightBrace |}|
+//@[3:4)   NewLine |\n|
+}
+//@[0:1)   RightBrace |}|
+//@[1:3) NewLine |\n\n|
+
+module ipv6 'br:[::1]/passthrough/ipv6:v1' = {
+//@[0:108) ModuleDeclarationSyntax
+//@[0:6)  Identifier |module|
+//@[7:11)  IdentifierSyntax
+//@[7:11)   Identifier |ipv6|
+//@[12:42)  StringSyntax
+//@[12:42)   StringComplete |'br:[::1]/passthrough/ipv6:v1'|
+//@[43:44)  Assignment |=|
+//@[45:108)  ObjectSyntax
+//@[45:46)   LeftBrace |{|
+//@[46:47)   NewLine |\n|
+  scope: rg
+//@[2:11)   ObjectPropertySyntax
+//@[2:7)    IdentifierSyntax
+//@[2:7)     Identifier |scope|
+//@[7:8)    Colon |:|
+//@[9:11)    VariableAccessSyntax
+//@[9:11)     IdentifierSyntax
+//@[9:11)      Identifier |rg|
+//@[11:12)   NewLine |\n|
+  name: 'ipv6'
+//@[2:14)   ObjectPropertySyntax
+//@[2:6)    IdentifierSyntax
+//@[2:6)     Identifier |name|
+//@[6:7)    Colon |:|
+//@[8:14)    StringSyntax
+//@[8:14)     StringComplete |'ipv6'|
+//@[14:15)   NewLine |\n|
+  params: {
+//@[2:32)   ObjectPropertySyntax
+//@[2:8)    IdentifierSyntax
+//@[2:8)     Identifier |params|
+//@[8:9)    Colon |:|
+//@[10:32)    ObjectSyntax
+//@[10:11)     LeftBrace |{|
+//@[11:12)     NewLine |\n|
+    ipv6: 'test'
+//@[4:16)     ObjectPropertySyntax
+//@[4:8)      IdentifierSyntax
+//@[4:8)       Identifier |ipv6|
+//@[8:9)      Colon |:|
+//@[10:16)      StringSyntax
+//@[10:16)       StringComplete |'test'|
+//@[16:17)     NewLine |\n|
+  }
+//@[2:3)     RightBrace |}|
+//@[3:4)   NewLine |\n|
+}
+//@[0:1)   RightBrace |}|
+//@[1:3) NewLine |\n\n|
+
+module ipv6port 'br:[::1]:5000/passthrough/ipv6port:v1' = {
+//@[0:129) ModuleDeclarationSyntax
+//@[0:6)  Identifier |module|
+//@[7:15)  IdentifierSyntax
+//@[7:15)   Identifier |ipv6port|
+//@[16:55)  StringSyntax
+//@[16:55)   StringComplete |'br:[::1]:5000/passthrough/ipv6port:v1'|
+//@[56:57)  Assignment |=|
+//@[58:129)  ObjectSyntax
+//@[58:59)   LeftBrace |{|
+//@[59:60)   NewLine |\n|
+  scope: rg
+//@[2:11)   ObjectPropertySyntax
+//@[2:7)    IdentifierSyntax
+//@[2:7)     Identifier |scope|
+//@[7:8)    Colon |:|
+//@[9:11)    VariableAccessSyntax
+//@[9:11)     IdentifierSyntax
+//@[9:11)      Identifier |rg|
+//@[11:12)   NewLine |\n|
+  name: 'ipv6port'
+//@[2:18)   ObjectPropertySyntax
+//@[2:6)    IdentifierSyntax
+//@[2:6)     Identifier |name|
+//@[6:7)    Colon |:|
+//@[8:18)    StringSyntax
+//@[8:18)     StringComplete |'ipv6port'|
+//@[18:19)   NewLine |\n|
+  params: {
+//@[2:36)   ObjectPropertySyntax
+//@[2:8)    IdentifierSyntax
+//@[2:8)     Identifier |params|
+//@[8:9)    Colon |:|
+//@[10:36)    ObjectSyntax
+//@[10:11)     LeftBrace |{|
+//@[11:12)     NewLine |\n|
+    ipv6port: 'test'
+//@[4:20)     ObjectPropertySyntax
+//@[4:12)      IdentifierSyntax
+//@[4:12)       Identifier |ipv6port|
+//@[12:13)      Colon |:|
+//@[14:20)      StringSyntax
+//@[14:20)       StringComplete |'test'|
+//@[20:21)     NewLine |\n|
+  }
+//@[2:3)     RightBrace |}|
+//@[3:4)   NewLine |\n|
+}
+//@[0:1)   RightBrace |}|
+//@[1:1) EndOfFile ||

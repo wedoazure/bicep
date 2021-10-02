@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Bicep.Core;
 using Bicep.Core.Extensions;
+using Bicep.Core.Features;
 using Bicep.Core.Navigation;
 using Bicep.Core.Parsing;
 using Bicep.Core.Semantics;
@@ -77,7 +78,7 @@ namespace Bicep.LanguageServer.Completions
         public Range ReplacementRange { get; }
 
 
-        public static BicepCompletionContext Create(Compilation compilation, int offset)
+        public static BicepCompletionContext Create(IFeatureProvider featureProvider, Compilation compilation, int offset)
         {
             var bicepFile = compilation.SourceFileGrouping.EntryPoint;
             var matchingNodes = SyntaxMatcher.FindNodesMatchingOffset(bicepFile.ProgramSyntax, offset);
@@ -127,6 +128,12 @@ namespace Bicep.LanguageServer.Completions
                        ConvertFlag(IsOuterExpressionContext(matchingNodes, offset), BicepCompletionContextKind.Expression) |
                        ConvertFlag(IsTargetScopeContext(matchingNodes, offset), BicepCompletionContextKind.TargetScope) |
                        ConvertFlag(IsDecoratorNameContext(matchingNodes, offset), BicepCompletionContextKind.DecoratorName);
+                       
+            if (featureProvider.ImportsEnabled)
+            {
+                kind |= ConvertFlag(IsImportSymbolFollower(matchingNodes, offset), BicepCompletionContextKind.ImportSymbolFollower) |
+                    ConvertFlag(IsImportFromFollower(matchingNodes, offset), BicepCompletionContextKind.ImportFromFollower);
+            }
 
             if (kind == BicepCompletionContextKind.None)
             {
@@ -221,13 +228,13 @@ namespace Bicep.LanguageServer.Completions
             // resource foo '...' |
             // OR
             // resource foo '...' | = {
-            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax>(matchingNodes, resource => !resource.IsExistingResource() && offset > resource.Type.GetEndPosition() && offset <= resource.Assignment.Span.Position) ||
+            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax>(matchingNodes, resource => offset > resource.Type.GetEndPosition() && offset <= resource.Assignment.Span.Position) ||
             // resource foo '...' e|
             // OR
             // resource foo '...' e| = {
-            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax, SkippedTriviaSyntax, Token>(matchingNodes, (resource, skipped, token) => !resource.IsExistingResource() && resource.Assignment == skipped && token.Type == TokenType.Identifier) ||
+            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax, SkippedTriviaSyntax, Token>(matchingNodes, (resource, skipped, token) => resource.Assignment == skipped && token.Type == TokenType.Identifier) ||
             // resource foo '...' |=
-            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax, Token>(matchingNodes, (resource, token) => !resource.IsExistingResource() && resource.Assignment == token && token.Type == TokenType.Assignment && offset == token.Span.Position);
+            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax, Token>(matchingNodes, (resource, token) => resource.Assignment == token && token.Type == TokenType.Assignment && offset == token.Span.Position);
 
         private static bool IsTargetScopeContext(List<SyntaxBase> matchingNodes, int offset) =>
             SyntaxMatcher.IsTailMatch<TargetScopeSyntax>(matchingNodes, targetScope =>
@@ -490,47 +497,39 @@ namespace Bicep.LanguageServer.Completions
             // var foo = a|
             SyntaxMatcher.IsTailMatch<VariableDeclarationSyntax, VariableAccessSyntax, IdentifierSyntax, Token>(matchingNodes, (_, _, _, token) => token.Type == TokenType.Identifier);
 
-        private static bool IsResourceBodyContext(List<SyntaxBase> matchingNodes, int offset)
-        {
+        private static bool IsResourceBodyContext(List<SyntaxBase> matchingNodes, int offset) =>
             // resources only allow {} as the body so we don't need to worry about
             // providing completions for a partially-typed identifier
-            switch (matchingNodes[^1])
-            {
-                case ResourceDeclarationSyntax resource:
-                    return !resource.Name.Span.ContainsInclusive(offset) &&
-                           !resource.Type.Span.ContainsInclusive(offset) &&
-                           !resource.Assignment.Span.ContainsInclusive(offset) &&
-                           resource.Value is SkippedTriviaSyntax && offset == resource.Value.Span.Position;
+            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax>(matchingNodes, resource =>
+                    !resource.Name.Span.ContainsInclusive(offset) &&
+                    !resource.Type.Span.ContainsInclusive(offset) &&
+                    !resource.Assignment.Span.ContainsInclusive(offset) &&
+                    resource.Value is SkippedTriviaSyntax && offset == resource.Value.Span.Position) ||
+            // cursor is after the = token
+            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax, Token>(matchingNodes, (_, token) => token.Type == TokenType.Assignment && offset == token.GetEndPosition()) ||
+            // [for x in y: |]
+            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax, ForSyntax, SkippedTriviaSyntax>(matchingNodes, (resource, @for, skipped) => resource.Value == @for && @for.Body == skipped) ||
+            // [for x in y: | ];
+            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax, ForSyntax>(matchingNodes, (resource, @for) => resource.Value == @for) ||
+            // [for x in y:|]
+            SyntaxMatcher.IsTailMatch<ResourceDeclarationSyntax, ForSyntax, Token>(matchingNodes, (resource, @for, token) => resource.Value == @for && @for.Colon == token && token.Type == TokenType.Colon && offset == token.Span.GetEndPosition());
 
-                case Token token when token.Type == TokenType.Assignment && matchingNodes.Count >= 2 && offset == token.GetEndPosition():
-                    // cursor is after the = token
-                    // check the type
-                    return matchingNodes[^2] is ResourceDeclarationSyntax;
-        }
-
-            return false;
-        }
-
-        private static bool IsModuleBodyContext(List<SyntaxBase> matchingNodes, int offset)
-        {
+        private static bool IsModuleBodyContext(List<SyntaxBase> matchingNodes, int offset) =>
             // modules only allow {} as the body so we don't need to worry about
             // providing completions for a partially-typed identifier
-            switch (matchingNodes[^1])
-            {
-                case ModuleDeclarationSyntax module:
-                    return !module.Name.Span.ContainsInclusive(offset) &&
-                           !module.Path.Span.ContainsInclusive(offset) &&
-                           !module.Assignment.Span.ContainsInclusive(offset) &&
-                           module.Value is SkippedTriviaSyntax && offset == module.Value.Span.Position;
-
-                case Token token when token.Type == TokenType.Assignment && matchingNodes.Count >= 2 && offset == token.GetEndPosition():
-                    // cursor is after the = token
-                    // check the type
-                    return matchingNodes[^2] is ModuleDeclarationSyntax;
-            }
-
-            return false;
-        }
+            SyntaxMatcher.IsTailMatch<ModuleDeclarationSyntax>(matchingNodes, module =>
+                !module.Name.Span.ContainsInclusive(offset) &&
+                !module.Path.Span.ContainsInclusive(offset) &&
+                !module.Assignment.Span.ContainsInclusive(offset) &&
+                module.Value is SkippedTriviaSyntax && offset == module.Value.Span.Position) ||
+            // cursor is after the = token
+            SyntaxMatcher.IsTailMatch<ModuleDeclarationSyntax, Token>(matchingNodes, (_, token) => token.Type == TokenType.Assignment && offset == token.GetEndPosition()) ||
+            // [for x in y: |]
+            SyntaxMatcher.IsTailMatch<ModuleDeclarationSyntax, ForSyntax, SkippedTriviaSyntax>(matchingNodes, (module, @for, skipped) => module.Value == @for && @for.Body == skipped) ||
+            // [for x in y: | ];
+            SyntaxMatcher.IsTailMatch<ModuleDeclarationSyntax, ForSyntax>(matchingNodes, (module, @for) => module.Value == @for) ||
+            // [for x in y:|]
+            SyntaxMatcher.IsTailMatch<ModuleDeclarationSyntax, ForSyntax, Token>(matchingNodes, (module, @for, token) => module.Value == @for && @for.Colon == token && token.Type == TokenType.Colon && offset == token.Span.GetEndPosition());
 
         private static bool IsDecoratorNameContext(List<SyntaxBase> matchingNodes, int offset) =>
             SyntaxMatcher.IsTailMatch<DecoratorSyntax, VariableAccessSyntax, IdentifierSyntax, Token>(matchingNodes, (_, _, _, token) => token.Type == TokenType.Identifier) ||
@@ -539,6 +538,18 @@ namespace Bicep.LanguageServer.Completions
             SyntaxMatcher.IsTailMatch<DecoratorSyntax, PropertyAccessSyntax, IdentifierSyntax, Token>(matchingNodes, (_, _, _, token) => token.Type == TokenType.Identifier) ||
             SyntaxMatcher.IsTailMatch<DecoratorSyntax, PropertyAccessSyntax, Token>(matchingNodes, (_, _, token) => token.Type == TokenType.Dot) ||
             SyntaxMatcher.IsTailMatch<DecoratorSyntax, PropertyAccessSyntax>(matchingNodes, (_, propertyAccessSyntax) => offset > propertyAccessSyntax.Dot.Span.Position);
+
+        private static bool IsImportSymbolFollower(List<SyntaxBase> matchingNodes, int offset) =>
+            // import foo |
+            SyntaxMatcher.IsTailMatch<ImportDeclarationSyntax>(matchingNodes, import => import.AliasName.IsValid && offset > import.AliasName.GetEndPosition() && offset <= import.FromKeyword.GetEndPosition()) ||
+            // import foo f|
+            SyntaxMatcher.IsTailMatch<ImportDeclarationSyntax, SkippedTriviaSyntax, Token>(matchingNodes, (import, skipped, _) => import.FromKeyword == skipped);
+
+        private static bool IsImportFromFollower(List<SyntaxBase> matchingNodes, int offset) =>
+            // import foo from |
+            SyntaxMatcher.IsTailMatch<ImportDeclarationSyntax>(matchingNodes, import => offset > import.FromKeyword.GetEndPosition() && import.ProviderName.Child is SkippedTriviaSyntax) ||
+            // import foo from f|
+            SyntaxMatcher.IsTailMatch<ImportDeclarationSyntax, IdentifierSyntax, Token>(matchingNodes, (import, ident, _) => import.ProviderName == ident);
 
         private static bool IsOuterExpressionContext(List<SyntaxBase> matchingNodes, int offset)
         {

@@ -7,6 +7,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Bicep.Core.Configuration;
+using Bicep.Core.FileSystem;
+using Bicep.Core.Registry;
 using Bicep.Core.UnitTests;
 using Bicep.Core.UnitTests.Assertions;
 using Bicep.Core.UnitTests.Utils;
@@ -18,18 +21,21 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol;
+using IOFileSystem = System.IO.Abstractions.FileSystem;
 
 namespace Bicep.LangServer.UnitTests.Handlers
 {
     [TestClass]
-    [SuppressMessage("Style", "VSTHRD200:Use \"Async\" suffix for async methods", Justification = "Test methods do not need to follow this convention.")]
     public class BicepBuildCommandHandlerTests
     {
         [NotNull]
         public TestContext? TestContext { get; set; }
 
+        private static readonly FileResolver FileResolver = new();
         private static readonly MockRepository Repository = new(MockBehavior.Strict);
         private static readonly ISerializer Serializer = Repository.Create<ISerializer>().Object;
+        private static readonly IConfigurationManager configurationManager = new ConfigurationManager(new IOFileSystem());
+        private readonly ModuleDispatcher ModuleDispatcher = new ModuleDispatcher(BicepTestConstants.RegistryProvider);
 
         [DataRow(null)]
         [DataRow("")]
@@ -38,7 +44,7 @@ namespace Bicep.LangServer.UnitTests.Handlers
         public void Handle_WithInvalidPath_ShouldThrowArgumentException(string path)
         {
             ICompilationManager bicepCompilationManager = Repository.Create<ICompilationManager>().Object;
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, EmitterSettingsHelper.DefaultTestSettings);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
 
             Action sut = () => bicepBuildCommandHandler.Handle(path, CancellationToken.None);
 
@@ -46,16 +52,20 @@ namespace Bicep.LangServer.UnitTests.Handlers
         }
 
         [TestMethod]
-        public void Handle_WithNullContext_ShouldThrowInvalidOperationException()
+        public async Task Handle_WithNullContext_ShouldCreateCompilation()
         {
-            string bicepFilePath = FileHelper.SaveResultFile(TestContext, "input.bicep", string.Empty);
+            string bicepFileContents = @"resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
+  name: 'dnsZone'
+  location: 'global'
+}";
+            string bicepFilePath = FileHelper.SaveResultFile(TestContext, "input.bicep", bicepFileContents);
             DocumentUri documentUri = DocumentUri.FromFileSystemPath(bicepFilePath);
-            BicepCompilationManager bicepCompilationManager = BicepCompilationManagerHelper.CreateCompilationManager(documentUri, string.Empty, false);
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, EmitterSettingsHelper.DefaultTestSettings);
+            // Do not upsert compilation. This will cause CompilationContext to be null
+            BicepCompilationManager bicepCompilationManager = BicepCompilationManagerHelper.CreateCompilationManager(documentUri, bicepFileContents, upsertCompilation: false);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
+            string expected = await bicepBuildCommandHandler.Handle(bicepFilePath, CancellationToken.None);
 
-            Action sut = () => bicepBuildCommandHandler.Handle(documentUri.Path, CancellationToken.None);
-
-            sut.Should().Throw<InvalidOperationException>().WithMessage("Unable to get compilation context");
+            expected.Should().Be(@"Build succeeded. Created file input.json");
         }
 
         [TestMethod]
@@ -75,7 +85,7 @@ resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' = {
 
             DocumentUri documentUri = DocumentUri.From(bicepFileUri);
             BicepCompilationManager bicepCompilationManager = BicepCompilationManagerHelper.CreateCompilationManager(documentUri, bicepFileContents, true);
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, EmitterSettingsHelper.DefaultTestSettings);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
             string expected = await bicepBuildCommandHandler.Handle(bicepFilePath, CancellationToken.None);
 
             expected.Should().Be(@"Build succeeded. Created file input.json");
@@ -101,7 +111,7 @@ targetScope = { }
 targetScope = true
 param accountName string = 'testAccount'
 ", true);
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, EmitterSettingsHelper.DefaultTestSettings);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
             string expected = await bicepBuildCommandHandler.Handle(documentUri.Path, CancellationToken.None);
 
             expected.Should().BeEquivalentToIgnoringNewlines(@"Build failed. Please fix below errors:
@@ -135,7 +145,7 @@ param accountName string = 'testAccount'
             FileHelper.SaveResultFile(TestContext, "input.json", string.Empty, outputPath);
             DocumentUri documentUri = DocumentUri.FromFileSystemPath(bicepFilePath);
             BicepCompilationManager bicepCompilationManager = BicepCompilationManagerHelper.CreateCompilationManager(documentUri, string.Empty, true);
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, EmitterSettingsHelper.DefaultTestSettings);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
             string expected = await bicepBuildCommandHandler.Handle(bicepFilePath, CancellationToken.None);
 
             expected.Should().Be(@"Build failed. The file ""input.json"" already exists and was not generated by Bicep. If overwriting the file is intended, delete it manually and retry the Build command.");
@@ -149,7 +159,7 @@ param accountName string = 'testAccount'
             FileHelper.SaveResultFile(TestContext, "input.json", "invalid json", outputPath);
             DocumentUri documentUri = DocumentUri.FromFileSystemPath(bicepFilePath);
             BicepCompilationManager bicepCompilationManager = BicepCompilationManagerHelper.CreateCompilationManager(documentUri, string.Empty, true);
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, EmitterSettingsHelper.DefaultTestSettings);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
             string expected = await bicepBuildCommandHandler.Handle(bicepFilePath, CancellationToken.None);
 
             expected.Should().Be(@"Build failed. The file ""input.json"" already exists and was not generated by Bicep. If overwriting the file is intended, delete it manually and retry the Build command.");
@@ -166,7 +176,7 @@ param accountName string = 'testAccount'
 ");
             DocumentUri documentUri = DocumentUri.FromFileSystemPath(bicepFilePath);
             BicepCompilationManager bicepCompilationManager = BicepCompilationManagerHelper.CreateCompilationManager(documentUri, string.Empty, true);
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, EmitterSettingsHelper.DefaultTestSettings);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Repository.Create<ISerializer>().Object, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
             string expected = await bicepBuildCommandHandler.Handle(bicepFilePath, CancellationToken.None);
 
             expected.Should().Be(@"Build succeeded. Created file input.json");
@@ -179,7 +189,7 @@ param accountName string = 'testAccount'
         public void TemplateContainsBicepGeneratorMetadata_WithInvalidInput_ReturnsFalse(string template)
         {
             ICompilationManager bicepCompilationManager = Repository.Create<ICompilationManager>().Object;
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, EmitterSettingsHelper.DefaultTestSettings);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
 
             bool actual = bicepBuildCommandHandler.TemplateContainsBicepGeneratorMetadata(template);
 
@@ -190,7 +200,7 @@ param accountName string = 'testAccount'
         public void TemplateContainsBicepGeneratorMetadata_WithBicepGeneratorMetadataInInput_ReturnsTrue()
         {
             ICompilationManager bicepCompilationManager = Repository.Create<ICompilationManager>().Object;
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, EmitterSettingsHelper.DefaultTestSettings);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
             string template = @"{
   ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
   ""contentVersion"": ""1.0.0.0"",
@@ -214,7 +224,7 @@ param accountName string = 'testAccount'
         public void TemplateContainsBicepGeneratorMetadata_WithoutBicepGeneratorMetadataInInput_ReturnsFalse()
         {
             ICompilationManager bicepCompilationManager = Repository.Create<ICompilationManager>().Object;
-            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, EmitterSettingsHelper.DefaultTestSettings);
+            BicepBuildCommandHandler bicepBuildCommandHandler = new BicepBuildCommandHandler(bicepCompilationManager, Serializer, BicepTestConstants.EmitterSettings, BicepTestConstants.NamespaceProvider, FileResolver, ModuleDispatcher, configurationManager);
             string template = @"{
   ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
   ""contentVersion"": ""1.0.0.0"",

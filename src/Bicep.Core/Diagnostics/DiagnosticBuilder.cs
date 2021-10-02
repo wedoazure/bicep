@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using Azure.ResourceManager.Resources.Models;
 using Bicep.Core.CodeAction;
 using Bicep.Core.Extensions;
 using Bicep.Core.Modules;
+using Bicep.Core.Navigation;
 using Bicep.Core.Parsing;
 using Bicep.Core.Resources;
 using Bicep.Core.Semantics;
@@ -218,17 +220,26 @@ namespace Bicep.Core.Diagnostics
                 "BCP034",
                 $"The enclosing array expected an item of type \"{expectedType}\", but the provided item was of type \"{actualType}\".");
 
-            public Diagnostic MissingRequiredProperties(bool warnInsteadOfError, Symbol? sourceDeclaration, IEnumerable<string> properties, string blockName)
+            public Diagnostic MissingRequiredProperties(bool warnInsteadOfError, Symbol? sourceDeclaration, ObjectSyntax objectSyntax, IEnumerable<string> properties, string blockName)
             {
                 var sourceDeclarationClause = sourceDeclaration is not null
                     ? $" from source declaration \"{sourceDeclaration.Name}\""
                     : string.Empty;
 
-                return new(
+                var newSyntax = objectSyntax.AddChildrenWithFormatting(
+                    properties.Select(p => SyntaxFactory.CreateObjectProperty(p, SyntaxFactory.EmptySkippedTrivia))
+                );
+
+                var codeFix = new CodeFix("Add required properties", true, new CodeReplacement(objectSyntax.Span, newSyntax.ToTextPreserveFormatting()));
+
+                return new FixableDiagnostic(
                     TextSpan,
                     warnInsteadOfError ? DiagnosticLevel.Warning : DiagnosticLevel.Error,
                     "BCP035",
-                    $"The specified \"{blockName}\" declaration is missing the following required properties{sourceDeclarationClause}: {ToQuotedString(properties)}.");
+                    $"The specified \"{blockName}\" declaration is missing the following required properties{sourceDeclarationClause}: {ToQuotedString(properties)}.",
+                    null,
+                    null,
+                    codeFix);
             }
 
             public Diagnostic PropertyTypeMismatch(bool warnInsteadOfError, Symbol? sourceDeclaration, string property, TypeSymbol expectedType, TypeSymbol actualType)
@@ -1150,12 +1161,77 @@ namespace Bicep.Core.Diagnostics
             public ErrorDiagnostic InvalidOciArtifactReference(string badRef) => new(
                 TextSpan,
                 "BCP193",
-                $"The specified OCI artifact reference \"{badRef}\" is not valid. Specify a reference in the format of \"oci:<artifact uri>:<tag>\".");
+                $"The specified OCI artifact reference \"{badRef}\" is not valid. Specify a reference in the format of \"{ModuleReferenceSchemes.Oci}:<artifact uri>:<tag>\".");
 
             public ErrorDiagnostic InvalidTemplateSpecReference(string invalidReference) => new(
                 TextSpan,
                 "BCP194",
                 $"The specified template spec reference \"{invalidReference}\" is not valid. Specify a reference in the format of \"{ModuleReferenceSchemes.TemplateSpecs}:<resourceGroupName>/<templateSpecName>:<tag>\" or \"{ModuleReferenceSchemes.TemplateSpecs}:<subscriptionId>/<resourceGroupName>/<templateSpecName>:<tag>\".");
+
+            public ErrorDiagnostic InvalidOciArtifactReferenceInvalidPathSegment(string badRef, string badSegment) => new(
+                TextSpan,
+                "BCP195",
+                $"The specified OCI artifact reference \"{badRef}\" is not valid. The module path segment \"{badSegment}\" is not valid. Each module name path segment must be a lowercase alphanumeric string optionally separated by a \".\", \"_\" , or \"-\".");
+
+            public ErrorDiagnostic InvalidOciArtifactReferenceMissingTag(string badRef) => new(
+                TextSpan,
+                "BCP196",
+                $"The specified OCI artifact reference \"{badRef}\" is not valid. The module tag is missing.");
+
+            public ErrorDiagnostic InvalidOciArtifactReferenceTagTooLong(string badRef, string badTag, int maxLength) => new(
+                TextSpan,
+                "BCP197",
+                $"The specified OCI artifact reference \"{badRef}\" is not valid. The tag \"{badTag}\" exceeds the maximum length of {maxLength} characters.");
+
+            public ErrorDiagnostic InvalidOciArtifactReferenceInvalidTag(string badRef, string badTag) => new(
+                TextSpan,
+                "BCP198",
+                $"The specified OCI artifact reference \"{badRef}\" is not valid. The tag \"{badTag}\" is not valid. Valid characters are alphanumeric, \".\", \"_\", or \"-\" but the tag cannot begin with \".\", \"_\", or \"-\".");
+
+            public ErrorDiagnostic InvalidOciArtifactReferenceRepositoryTooLong(string badRef, string badRepository, int maxLength) => new(
+                TextSpan,
+                "BCP199",
+                $"The specified OCI artifact reference \"{badRef}\" is not valid. Module path \"{badRepository}\" exceeds the maximum length of {maxLength} characters.");
+
+            public ErrorDiagnostic InvalidOciArtifactReferenceRegistryTooLong(string badRef, string badRegistry, int maxLength) => new(
+                TextSpan,
+                "BCP200",
+                $"The specified OCI artifact reference \"{badRef}\" is not valid. The registry \"{badRegistry}\" exceeds the maximum length of {maxLength} characters.");
+
+            public ErrorDiagnostic ExpectedImportProviderName() => new(
+                TextSpan,
+                "BCP201",
+                "Expected an import provider name at this location.");
+
+            public ErrorDiagnostic ExpectedImportAliasName() => new(
+                TextSpan,
+                "BCP202",
+                "Expected an import alias name at this location.");
+
+            public ErrorDiagnostic ImportsAreDisabled() => new(
+                TextSpan,
+                "BCP203",
+                "Import statements are currently not supported.");
+
+            public ErrorDiagnostic UnrecognizedImportProvider(string identifier) => new(
+                TextSpan,
+                "BCP204",
+                $"Imported namespace \"{identifier}\" is not recognized.");
+
+            public ErrorDiagnostic ImportProviderDoesNotSupportConfiguration(string identifier) => new(
+                TextSpan,
+                "BCP205",
+                $"Imported namespace \"{identifier}\" does not support configuration.");
+
+            public ErrorDiagnostic ImportProviderRequiresConfiguration(string identifier) => new(
+                TextSpan,
+                "BCP206",
+                $"Imported namespace \"{identifier}\" requires configuration, but none was provided.");
+
+            public ErrorDiagnostic NamespaceMultipleDeclarations(string identifier) => new(
+                TextSpan,
+                "BCP207",
+                $"Namespace \"{identifier}\" is imported multiple times. Remove the duplicates.");
         }
 
         public static DiagnosticBuilderInternal ForPosition(TextSpan span)

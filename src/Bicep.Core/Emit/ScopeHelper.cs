@@ -70,11 +70,12 @@ namespace Bicep.Core.Emit
             {
                 // scope indexing can only happen with references to module or resource collections
                 ArrayAccessSyntax { BaseExpression: VariableAccessSyntax baseVariableAccess } arrayAccess => (semanticModel.GetSymbolInfo(baseVariableAccess), arrayAccess.IndexExpression),
+                ArrayAccessSyntax { BaseExpression: ResourceAccessSyntax baseVariableAccess } arrayAccess => (semanticModel.GetSymbolInfo(baseVariableAccess), arrayAccess.IndexExpression),
 
                 // all other scope expressions
                 _ => (semanticModel.GetSymbolInfo(scopeValue), null)
             };
-                
+
             var scopeType = semanticModel.GetTypeInfo(scopeValue);
 
             switch (scopeType)
@@ -128,7 +129,7 @@ namespace Bicep.Core.Emit
                         _ => new ScopeData { RequestedScope = ResourceScope.ResourceGroup, SubscriptionIdProperty = type.Arguments[0].Expression, ResourceGroupProperty = type.Arguments[1].Expression, IndexExpression = indexExpression },
                     };
                 case { } when scopeSymbol is ResourceSymbol targetResourceSymbol:
-                    if (semanticModel.ResourceMetadata.TryLookup(targetResourceSymbol.DeclaringSyntax) is not {} targetResource)
+                    if (semanticModel.ResourceMetadata.TryLookup(targetResourceSymbol.DeclaringSyntax) is not { } targetResource)
                     {
                         return null;
                     }
@@ -158,6 +159,24 @@ namespace Bicep.Core.Emit
                         }
                     }
 
+                    if (StringComparer.OrdinalIgnoreCase.Equals(targetResource.TypeReference.FullyQualifiedType, AzResourceTypeProvider.ResourceTypeManagementGroup))
+                    {
+                        // special-case 'Microsoft.Management/managementGroups' in order to allow it to create a managementGroup-scope resource
+                        // ignore diagnostics - these will be collected separately in the pass over resources
+                        var hasErrors = false;
+                        var mgScopeData = ScopeHelper.ValidateScope(semanticModel, (_, _, _) => { hasErrors = true; }, targetResource.Type.ValidParentScopes, targetResource.Symbol.DeclaringResource.Value, targetResource.ScopeSyntax);
+                        if (!hasErrors)
+                        {
+                            if (!supportedScopes.HasFlag(ResourceScope.ManagementGroup))
+                            {
+                                logInvalidScopeFunc(scopeValue, ResourceScope.ManagementGroup, supportedScopes);
+                                return null;
+                            }
+
+                            return new ScopeData { RequestedScope = ResourceScope.ManagementGroup, ManagementGroupNameProperty = targetResource.NameSyntax, IndexExpression = indexExpression };
+                        }
+                    }
+
                     if (!supportedScopes.HasFlag(ResourceScope.Resource))
                     {
                         logInvalidScopeFunc(scopeValue, ResourceScope.Resource, supportedScopes);
@@ -175,7 +194,7 @@ namespace Bicep.Core.Emit
                         // otherwise, the errors produced by the type check are sufficient
                         logInvalidScopeFunc(scopeValue, ResourceScope.Module, supportedScopes);
                     }
-                    
+
                     return null;
             }
 
@@ -242,7 +261,7 @@ namespace Bicep.Core.Emit
                     // but until we have it, we should generate unqualified resource Ids. There should not be a risk of collision, because we do not allow mixing of resource scopes in a single bicep file.
                     return ExpressionConverter.GenerateUnqualifiedResourceId(fullyQualifiedType, nameSegments);
                 case ResourceScope.Resource:
-                    if (scopeData.ResourceScope is not {} resource)
+                    if (scopeData.ResourceScope is not { } resource)
                     {
                         throw new InvalidOperationException("Cannot format resourceId with non-null resource scope symbol");
                     }
@@ -273,7 +292,7 @@ namespace Bicep.Core.Emit
                 case ResourceScope.ManagementGroup:
                     return ExpressionConverter.GenerateUnqualifiedResourceId(fullyQualifiedType, nameSegments);
                 case ResourceScope.Resource:
-                    if (scopeData.ResourceScope is not {} resource)
+                    if (scopeData.ResourceScope is not { } resource)
                     {
                         throw new InvalidOperationException("Cannot format resourceId with non-null resource scope symbol");
                     }
@@ -296,7 +315,7 @@ namespace Bicep.Core.Emit
 
         public static void EmitResourceScopeProperties(SemanticModel semanticModel, ScopeData scopeData, ExpressionEmitter expressionEmitter, SyntaxBase newContext)
         {
-            if (scopeData.ResourceScope is {} scopeResource)
+            if (scopeData.ResourceScope is { } scopeResource)
             {
                 // emit the resource id of the resource being extended
                 expressionEmitter.EmitProperty("scope", () => expressionEmitter.EmitUnqualifiedResourceId(scopeResource, scopeData.IndexExpression, newContext));
@@ -308,7 +327,7 @@ namespace Bicep.Core.Emit
             }
         }
 
-        public static void EmitModuleScopeProperties(ResourceScope targetScope, ScopeData scopeData, ExpressionEmitter expressionEmitter)
+        public static void EmitModuleScopeProperties(ResourceScope targetScope, ScopeData scopeData, ExpressionEmitter expressionEmitter, SyntaxBase newContext)
         {
             switch (scopeData.RequestedScope)
             {
@@ -316,15 +335,15 @@ namespace Bicep.Core.Emit
                     expressionEmitter.EmitProperty("scope", new JTokenExpression("/"));
                     return;
                 case ResourceScope.ManagementGroup:
-                    if (scopeData.ManagementGroupNameProperty != null)
+                    if (scopeData.ManagementGroupNameProperty is not null)
                     {
                         // The template engine expects an unqualified resourceId for the management group scope if deploying at tenant or management group scope
                         var useFullyQualifiedResourceId = targetScope != ResourceScope.Tenant && targetScope != ResourceScope.ManagementGroup;
-                        expressionEmitter.EmitProperty("scope", expressionEmitter.GetManagementGroupResourceId(scopeData.ManagementGroupNameProperty, useFullyQualifiedResourceId));
+                        expressionEmitter.EmitProperty("scope", expressionEmitter.GetManagementGroupResourceId(scopeData.ManagementGroupNameProperty, scopeData.IndexExpression, newContext, useFullyQualifiedResourceId));
                     }
                     return;
                 case ResourceScope.Subscription:
-                    if (scopeData.SubscriptionIdProperty != null)
+                    if (scopeData.SubscriptionIdProperty is not null)
                     {
                         expressionEmitter.EmitProperty("subscriptionId", scopeData.SubscriptionIdProperty);
                     }
@@ -334,13 +353,13 @@ namespace Bicep.Core.Emit
                     }
                     return;
                 case ResourceScope.ResourceGroup:
-                    if (scopeData.SubscriptionIdProperty != null)
+                    if (scopeData.SubscriptionIdProperty is not null)
                     {
-                        expressionEmitter.EmitProperty("subscriptionId", scopeData.SubscriptionIdProperty);
+                        expressionEmitter.EmitProperty("subscriptionId", () => expressionEmitter.EmitExpression(scopeData.SubscriptionIdProperty, scopeData.IndexExpression, newContext));
                     }
-                    if (scopeData.ResourceGroupProperty != null)
+                    if (scopeData.ResourceGroupProperty is not null)
                     {
-                        expressionEmitter.EmitProperty("resourceGroup", scopeData.ResourceGroupProperty);
+                        expressionEmitter.EmitProperty("resourceGroup", () => expressionEmitter.EmitExpression(scopeData.ResourceGroupProperty, scopeData.IndexExpression, newContext));
                     }
                     return;
                 default:
@@ -395,7 +414,7 @@ namespace Bicep.Core.Emit
             {
                 return;
             }
-            
+
             var rootResource = GetRootResource(scopeInfo, resource);
             if (rootResource is null ||
                 !scopeInfo.TryGetValue(rootResource, out var scopeData))
@@ -404,23 +423,28 @@ namespace Bicep.Core.Emit
                 return;
             }
 
-            if(scopeData.RequestedScope == ResourceScope.Tenant)
+            if (!IsDeployableResourceScope(semanticModel, scopeData))
+            {
+                writeScopeDiagnostic(x => x.InvalidCrossResourceScope());
+            }
+        }
+
+        private static bool IsDeployableResourceScope(SemanticModel semanticModel, ScopeData scopeData)
+        {
+            if (scopeData.RequestedScope == ResourceScope.Tenant)
             {
                 // tenant resources can be deployed cross-scope
-                return;
+                return true;
             }
 
             // we only allow resources to be deployed at the target scope
             var matchesTargetScope = (scopeData.RequestedScope == semanticModel.TargetScope &&
-                scopeData.ManagementGroupNameProperty is null  &&
+                scopeData.ManagementGroupNameProperty is null &&
                 scopeData.SubscriptionIdProperty is null &&
                 scopeData.ResourceGroupProperty is null &&
                 scopeData.ResourceScope is null);
 
-            if (!matchesTargetScope)
-            {
-                writeScopeDiagnostic(x => x.InvalidCrossResourceScope());
-            }
+            return matchesTargetScope;
         }
 
         public static ImmutableDictionary<ResourceMetadata, ScopeData> GetResourceScopeInfo(SemanticModel semanticModel, IDiagnosticWriter diagnosticWriter)
@@ -434,6 +458,8 @@ namespace Bicep.Core.Emit
                     x => x,
                     x => semanticModel.ResourceAncestors.GetAncestors(x));
 
+            var defaultScopeData = new ScopeData { RequestedScope = semanticModel.TargetScope };
+
             // process symbols in order of ancestor depth.
             // this is because we want to avoid recomputing the scope for child resources which inherit it from their parents.
             foreach (var (resource, ancestors) in ancestorsLookup.OrderBy(kvp => kvp.Value.Length))
@@ -445,22 +471,26 @@ namespace Bicep.Core.Emit
                         // it doesn't make sense to have scope on a descendent resource; it should be inherited from the oldest ancestor.
                         diagnosticWriter.Write(resource.ScopeSyntax, x => x.ScopeUnsupportedOnChildResource(ancestors.Last().Resource.Symbol.Name));
                         // TODO: format the ancestor name using the resource accessor (::) for nested resources
+                        scopeInfo[resource] = defaultScopeData;
                         continue;
                     }
 
                     var firstAncestor = ancestors.First();
-                    if (!resource.IsExistingResource && 
-                        firstAncestor.Resource.IsExistingResource && 
-                        firstAncestor.Resource.ScopeSyntax is {} firstAncestorScope)
+                    if (!resource.IsExistingResource &&
+                        firstAncestor.Resource.IsExistingResource &&
+                        !IsDeployableResourceScope(semanticModel, scopeInfo[firstAncestor.Resource]))
                     {
-                        // it doesn't make sense to have scope on a descendent resource; it should be inherited from the oldest ancestor.
+                        // Setting 'scope' is blocked for child resources, so we just need to check whether the root ancestor has 'scope' set.
+                        // If it does, it could be an 'existing' resource - which can be assigned any scope - so we need to ensure the assigned scope can be used to deploy.
                         diagnosticWriter.Write(resource.Symbol.DeclaringResource.Value, x => x.ScopeDisallowedForAncestorResource(firstAncestor.Resource.Symbol.Name));
                         // TODO: format the ancestor name using the resource accessor (::) for nested resources
+                        scopeInfo[resource] = defaultScopeData;
                         continue;
                     }
 
                     if (semanticModel.Binder.TryGetCycle(resource.Symbol) is not null)
                     {
+                        scopeInfo[resource] = defaultScopeData;
                         continue;
                     }
 
@@ -470,14 +500,9 @@ namespace Bicep.Core.Emit
                     continue;
                 }
 
-                var scopeData = ScopeHelper.ValidateScope(semanticModel, logInvalidScopeDiagnostic, resource.Type.ValidParentScopes, resource.Symbol.DeclaringResource.Value, resource.ScopeSyntax);
+                var validatedScopeData = ScopeHelper.ValidateScope(semanticModel, logInvalidScopeDiagnostic, resource.Type.ValidParentScopes, resource.Symbol.DeclaringResource.Value, resource.ScopeSyntax);
 
-                if (scopeData is null)
-                {
-                    scopeData = new ScopeData { RequestedScope = semanticModel.TargetScope };
-                }
-
-                scopeInfo[resource] = scopeData;
+                scopeInfo[resource] = validatedScopeData ?? defaultScopeData;
             }
 
             foreach (var resourceToValidate in semanticModel.AllResources)
@@ -497,12 +522,13 @@ namespace Bicep.Core.Emit
             bool checkScopes(params ResourceScope[] scopes)
                 => scopes.Contains(semanticModel.TargetScope);
 
-            var isValid = scopeData.RequestedScope switch {
+            var isValid = scopeData.RequestedScope switch
+            {
                 // If you update this switch block to add new supported nested template scope combinations,
                 // please ensure you update the wording of error messages BCP113, BCP114, BCP115 & BCP116 to reflect this!
-                ResourceScope.Tenant 
+                ResourceScope.Tenant
                     => checkScopes(ResourceScope.Tenant, ResourceScope.ManagementGroup, ResourceScope.Subscription, ResourceScope.ResourceGroup),
-                ResourceScope.ManagementGroup when scopeData.ManagementGroupNameProperty is not null 
+                ResourceScope.ManagementGroup when scopeData.ManagementGroupNameProperty is not null
                     => checkScopes(ResourceScope.Tenant, ResourceScope.ManagementGroup),
                 ResourceScope.ManagementGroup
                     => checkScopes(ResourceScope.Tenant, ResourceScope.ManagementGroup),
@@ -518,7 +544,7 @@ namespace Bicep.Core.Emit
                     => checkScopes(ResourceScope.ResourceGroup),
                 _ => false,
             };
-            
+
             if (isValid)
             {
                 return;
@@ -550,7 +576,7 @@ namespace Bicep.Core.Emit
 
             foreach (var moduleSymbol in semanticModel.Root.ModuleDeclarations)
             {
-                if (moduleSymbol.TryGetModuleType() is not {} moduleType)
+                if (moduleSymbol.TryGetModuleType() is not { } moduleType)
                 {
                     // missing type should be caught during type validation
                     continue;

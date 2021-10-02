@@ -24,11 +24,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Bicep.Core.Configuration;
-using Bicep.Core.Analyzers.Linter;
-using Bicep.Core.UnitTests.Configuration;
-using Bicep.Core.Modules;
 using Bicep.Core.Registry;
-using Bicep.Core.Syntax;
 
 namespace Bicep.Core.Samples
 {
@@ -125,13 +121,11 @@ namespace Bicep.Core.Samples
 
             var dispatcher = new ModuleDispatcher(BicepTestConstants.RegistryProvider);
             var sourceFileGrouping = SourceFileGroupingBuilder.Build(BicepTestConstants.FileResolver, dispatcher, new Workspace(), PathHelper.FilePathToFileUrl(bicepFileName));
-            var compilation = new Compilation(AzResourceTypeProvider.CreateWithAzTypes(), sourceFileGrouping);
-            var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), EmitterSettingsHelper.DefaultTestSettings);
+            var configuration = BicepTestConstants.BuiltInConfigurationWithAnalyzersDisabled;
+            var compilation = new Compilation(BicepTestConstants.NamespaceProvider, sourceFileGrouping, configuration);
+            var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), BicepTestConstants.EmitterSettings);
 
-            // quiet the linter diagnostics
-            var overrideConfig = new ConfigHelper().GetDisabledLinterConfig();
-
-            foreach (var (bicepFile, diagnostics) in compilation.GetAllDiagnosticsByBicepFile(overrideConfig))
+            foreach (var (bicepFile, diagnostics) in compilation.GetAllDiagnosticsByBicepFile())
             {
                 DiagnosticAssertions.DoWithDiagnosticAnnotations(
                     bicepFile,
@@ -149,7 +143,7 @@ namespace Bicep.Core.Samples
 
                 using var stream = new MemoryStream();
                 var result = emitter.Emit(stream);
-            
+
                 result.Status.Should().Be(EmitStatus.Succeeded);
 
                 if (result.Status == EmitStatus.Succeeded)
@@ -161,7 +155,7 @@ namespace Bicep.Core.Samples
                     File.WriteAllText(jsonFileName + ".actual", generated);
 
                     actual.Should().EqualWithJsonDiffOutput(
-                        TestContext, 
+                        TestContext,
                         exampleExists ? JToken.Parse(File.ReadAllText(jsonFileName)) : new JObject(),
                         example.JsonStreamName,
                         jsonFileName + ".actual");
@@ -191,13 +185,11 @@ namespace Bicep.Core.Samples
 
             var dispatcher = new ModuleDispatcher(BicepTestConstants.RegistryProvider);
             var sourceFileGrouping = SourceFileGroupingBuilder.Build(BicepTestConstants.FileResolver, dispatcher, new Workspace(), PathHelper.FilePathToFileUrl(bicepFileName));
-            var compilation = new Compilation(AzResourceTypeProvider.CreateWithAzTypes(), sourceFileGrouping);
-            var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), EmitterSettingsHelper.WithSymbolicNamesEnabled);
+            var configuration = BicepTestConstants.BuiltInConfigurationWithAnalyzersDisabled;
+            var compilation = new Compilation(BicepTestConstants.NamespaceProvider, sourceFileGrouping, configuration);
+            var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), BicepTestConstants.EmitterSettingsWithSymbolicNames);
 
-            // quiet the linter diagnostics
-            var overrideConfig = new ConfigHelper().GetDisabledLinterConfig();
-
-            foreach (var (bicepFile, diagnostics) in compilation.GetAllDiagnosticsByBicepFile(overrideConfig))
+            foreach (var (bicepFile, diagnostics) in compilation.GetAllDiagnosticsByBicepFile())
             {
                 DiagnosticAssertions.DoWithDiagnosticAnnotations(
                     bicepFile,
@@ -215,7 +207,7 @@ namespace Bicep.Core.Samples
 
                 using var stream = new MemoryStream();
                 var result = emitter.Emit(stream);
-            
+
                 result.Status.Should().Be(EmitStatus.Succeeded);
 
                 if (result.Status == EmitStatus.Succeeded)
@@ -227,7 +219,7 @@ namespace Bicep.Core.Samples
                     File.WriteAllText(jsonFileName + ".actual", generated);
 
                     actual.Should().EqualWithJsonDiffOutput(
-                        TestContext, 
+                        TestContext,
                         exampleExists ? JToken.Parse(File.ReadAllText(jsonFileName)) : new JObject(),
                         $"src/Bicep.Core.Samples/Files/{relativeJsonStreamName}",
                         jsonFileName + ".actual");
@@ -250,7 +242,7 @@ namespace Bicep.Core.Samples
             var bicepFileName = Path.Combine(outputDirectory, Path.GetFileName(example.BicepStreamName));
             var originalContents = File.ReadAllText(bicepFileName);
             var program = ParserHelper.Parse(originalContents);
-            
+
             var printOptions = new PrettyPrintOptions(NewlineOption.LF, IndentKindOption.Space, 2, true);
 
             var formattedContents = PrettyPrinter.PrintProgram(program, printOptions);
@@ -259,7 +251,7 @@ namespace Bicep.Core.Samples
             File.WriteAllText(bicepFileName + ".formatted", formattedContents);
 
             originalContents.Should().EqualWithLineByLineDiffOutput(
-                TestContext, 
+                TestContext,
                 formattedContents!,
                 expectedLocation: example.BicepStreamName,
                 actualLocation: bicepFileName + ".formatted");

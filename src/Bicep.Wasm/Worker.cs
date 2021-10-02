@@ -29,12 +29,14 @@ using System.Reactive.Concurrency;
 using Bicep.Core.Resources;
 using Bicep.LanguageServer.Snippets;
 using BlazorWorker.WorkerCore;
+using Bicep.Core.Semantics.Namespaces;
+using Bicep.Core.Features;
 
 namespace Bicep.Wasm
 {
     public class Worker
     {
-        private class TestResourceTypeLoader : IResourceTypeLoader
+        private class TestResourceTypeLoader : IAzResourceTypeLoader
         {
             public IEnumerable<ResourceTypeReference> GetAvailableTypes()
                 => Enumerable.Empty<ResourceTypeReference>();
@@ -79,7 +81,7 @@ namespace Bicep.Wasm
             server = new Server(inputPipe.Reader, outputPipe.Writer, new Server.CreationOptions {
                 SnippetsProvider = new TestSnippetsProvider(),
                 FileResolver = new FileResolver(),
-                ResourceTypeProvider = AzResourceTypeProvider.CreateWithLoader(new TestResourceTypeLoader(), false),
+                NamespaceProvider = new DefaultNamespaceProvider(new TestResourceTypeLoader(), new FeatureProvider()),
             }, options =>  options.Services.AddSingleton<IScheduler>(ImmediateScheduler.Instance));
 
             inputWriter = inputPipe.Writer;

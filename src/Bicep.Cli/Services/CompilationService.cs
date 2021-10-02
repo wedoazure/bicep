@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Bicep.Cli.Logging;
+using Bicep.Core.Configuration;
 using Bicep.Core.Extensions;
 using Bicep.Core.FileSystem;
 using Bicep.Core.Registry;
@@ -19,15 +20,23 @@ namespace Bicep.Cli.Services
         private readonly IDiagnosticLogger diagnosticLogger;
         private readonly IFileResolver fileResolver;
         private readonly IModuleDispatcher moduleDispatcher;
+        private readonly IConfigurationManager configurationManager;
         private readonly InvocationContext invocationContext;
         private readonly Workspace workspace;
         private readonly TemplateDecompiler decompiler;
 
-        public CompilationService(IDiagnosticLogger diagnosticLogger, IFileResolver fileResolver, InvocationContext invocationContext, IModuleDispatcher moduleDispatcher, TemplateDecompiler decompiler) 
+        public CompilationService(
+            IDiagnosticLogger diagnosticLogger,
+            IFileResolver fileResolver,
+            InvocationContext invocationContext,
+            IModuleDispatcher moduleDispatcher,
+            IConfigurationManager configurationManager,
+            TemplateDecompiler decompiler)
         {
             this.diagnosticLogger = diagnosticLogger;
             this.fileResolver = fileResolver;
             this.moduleDispatcher = moduleDispatcher;
+            this.configurationManager = configurationManager;
             this.invocationContext = invocationContext;
             this.workspace = new Workspace();
             this.decompiler = decompiler;
@@ -61,7 +70,8 @@ namespace Bicep.Cli.Services
                 }
             }
 
-            var compilation = new Compilation(this.invocationContext.ResourceTypeProvider, sourceFileGrouping);
+            var configuration = this.configurationManager.GetConfiguration(inputUri);
+            var compilation = new Compilation(this.invocationContext.NamespaceProvider, sourceFileGrouping, configuration);
 
             LogDiagnostics(compilation);
 
@@ -83,7 +93,7 @@ namespace Bicep.Cli.Services
             }
 
             // to verify success we recompile and check for syntax errors.
-            await CompileAsync(decompilation.entrypointUri.AbsolutePath, skipRestore: true); 
+            await CompileAsync(decompilation.entrypointUri.AbsolutePath, skipRestore: true);
 
             return decompilation;
         }

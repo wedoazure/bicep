@@ -7,7 +7,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "13385542931942243651"
+      "templateHash": "11540454296860165981"
     }
   },
   "parameters": {
@@ -69,7 +69,7 @@
     },
     "network": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
+      "apiVersion": "2020-06-01",
       "name": "network",
       "properties": {
         "expressionEvaluationOptions": {
@@ -193,7 +193,7 @@
     },
     "vm": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
+      "apiVersion": "2020-06-01",
       "name": "cycleserver",
       "properties": {
         "expressionEvaluationOptions": {
@@ -223,7 +223,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "3618254924784373367"
+              "templateHash": "6849390527810909284"
             }
           },
           "parameters": {
@@ -289,7 +289,7 @@
               "identity": {
                 "type": "UserAssigned",
                 "userAssignedIdentities": {
-                  "[parameters('userAssignedIdentity')]": {}
+                  "[format('{0}', parameters('userAssignedIdentity'))]": {}
                 }
               },
               "properties": {

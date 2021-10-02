@@ -47,11 +47,13 @@ namespace Bicep.Core.IntegrationTests
             }
 
             var file = "param adminuser string\nvar adminstring = 'xyx ${adminuser} 123'\n";
+            file += "output values object = {\n";
             for (var i = 0; i < lineCount; i++)
             {
-                file += $"output testa{i} string = '{randomString()} ${{adminuser}} {randomString()}'\n";
-                file += $"output testb{i} string = '{randomString()} ${{adminstring}} {randomString()}'\n";
+                file += $"  testa{i}: '{randomString()} ${{adminuser}} {randomString()}'\n";
+                file += $"  testb{i}: '{randomString()} ${{adminstring}} {randomString()}'\n";
             }
+            file += "}\n";
 
             // not a true test for existing diagnostics
             // this is a trigger to allow timing within the
@@ -137,8 +139,8 @@ output vnetstate string = vnet.properties.provisioningState
 
             result.Should().NotHaveAnyDiagnostics();
             // ensure we're generating the correct expression with 'subscriptionResourceId', and using the correct name for the module
-            result.Template.Should().HaveValueAtPath("$.outputs['vnetid'].value", "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'vnet-rg'), 'Microsoft.Resources/deployments', 'network-module'), '2019-10-01').outputs.vnetId.value]");
-            result.Template.Should().HaveValueAtPath("$.outputs['vnetstate'].value", "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'vnet-rg'), 'Microsoft.Resources/deployments', 'network-module'), '2019-10-01').outputs.vnetstate.value]");
+            result.Template.Should().HaveValueAtPath("$.outputs['vnetid'].value", "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'vnet-rg'), 'Microsoft.Resources/deployments', 'network-module'), '2020-06-01').outputs.vnetId.value]");
+            result.Template.Should().HaveValueAtPath("$.outputs['vnetstate'].value", "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'vnet-rg'), 'Microsoft.Resources/deployments', 'network-module'), '2020-06-01').outputs.vnetstate.value]");
         }
 
         [TestMethod]
@@ -403,7 +405,7 @@ var issue = true ? {
             result.Should().HaveDiagnostics(new[] {
                     (NoUnusedVariablesRule.Code, DiagnosticLevel.Warning, new NoUnusedVariablesRule().GetMessage("issue"))
                 });
-            result.Template.Should().HaveValueAtPath("$.variables.issue", "[if(true(), createObject('prop1', createObject(variables('propname'), createObject())), createObject())]");
+            result.Template.Should().HaveValueAtPath("$.variables.issue", "[if(true(), createObject('prop1', createObject(format('{0}', variables('propname')), createObject())), createObject())]");
         }
 
         [TestMethod]
@@ -911,7 +913,7 @@ output test string = 'hello'
 
             result.Should().NotHaveAnyDiagnostics();
             result.Template.Should().HaveValueAtPath("$.outputs['fooName'].value", "[format('{0}-test', parameters('someParam'))]");
-            result.Template.Should().HaveValueAtPath("$.outputs['fooOutput'].value", "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-test', parameters('someParam'))), '2019-10-01').outputs.test.value]");
+            result.Template.Should().HaveValueAtPath("$.outputs['fooOutput'].value", "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-test', parameters('someParam'))), '2020-06-01').outputs.test.value]");
         }
 
         [TestMethod]
@@ -1105,7 +1107,7 @@ resource eventGridSubscription 'Microsoft.EventGrid/eventSubscriptions@2020-06-0
             };
 
             var result = CompilationHelper.Compile(
-                TestTypeHelper.CreateProviderWithTypes(customTypes),
+                TestTypeHelper.CreateAzResourceTypeLoaderWithTypes(customTypes),
                 ("main.bicep", @"
 resource test 'Rp.A/parent@2020-10-01' = {
   name: 'test'
@@ -1143,7 +1145,7 @@ resource test5 'Rp.A/parent/child@2020-10-01' existing = {
             result.Should().NotHaveAnyDiagnostics();
 
             var failedResult = CompilationHelper.Compile(
-                TestTypeHelper.CreateProviderWithTypes(customTypes),
+                TestTypeHelper.CreateAzResourceTypeLoaderWithTypes(customTypes),
                 ("main.bicep", @"
 resource test 'Rp.A/parent@2020-10-01' = {
   name: 'test'
@@ -1194,7 +1196,7 @@ resource test5 'Rp.A/parent/child@2020-10-01' existing = {
             };
 
             var result = CompilationHelper.Compile(
-                TestTypeHelper.CreateProviderWithTypes(customTypes),
+                TestTypeHelper.CreateAzResourceTypeLoaderWithTypes(customTypes),
                 ("main.bicep", @"
 resource test 'Rp.A/parent@2020-10-01' = {
   name: 'test'
@@ -1232,7 +1234,7 @@ resource test5 'Rp.A/parent/child@2020-10-01' existing = {
             result.Should().NotHaveAnyDiagnostics();
 
             var failedResult = CompilationHelper.Compile(
-                TestTypeHelper.CreateProviderWithTypes(customTypes),
+                TestTypeHelper.CreateAzResourceTypeLoaderWithTypes(customTypes),
                 ("main.bicep", @"
 resource test 'Rp.A/parent@2020-10-01' = {
   name: 'test'
@@ -2110,7 +2112,7 @@ resource cname 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
                 ("BCP036", DiagnosticLevel.Error, "The property \"name\" expected a value of type \"string\" but the provided value is of type \"null\"."),
                 ("BCP036", DiagnosticLevel.Error, "The property \"scope\" expected a value of type \"resource | tenant\" but the provided value is of type \"null\"."),
                 ("BCP036", DiagnosticLevel.Error, "The property \"name\" expected a value of type \"string\" but the provided value is of type \"null\"."),
-                ("BCP036", DiagnosticLevel.Error, "The property \"parent\" expected a value of type \"resource\" but the provided value is of type \"null\"."),
+                ("BCP036", DiagnosticLevel.Error, "The property \"parent\" expected a value of type \"Microsoft.Network/dnsZones\" but the provided value is of type \"null\"."),
             });
         }
 
@@ -2403,6 +2405,39 @@ resource dataCollectionRuleRes 'Microsoft.Insights/dataCollectionRules@2021-04-0
             });
         }
 
+        /// <summary>
+        /// https://github.com/Azure/bicep/issues/1833
+        /// </summary>
+        [TestMethod]
+        public void Test_Issue1833()
+        {
+            var result = CompilationHelper.Compile(
+                ("managementGroup.bicep", @"
+targetScope = 'managementGroup'
+"),
+                ("main.bicep", @"
+targetScope = 'tenant'
+
+param mainMgName string
+param managementGroups array
+
+resource mainMg 'Microsoft.Management/managementGroups@2020-05-01' = {
+  name: mainMgName
+}
+
+resource mgs 'Microsoft.Management/managementGroups@2020-05-01' = [for (mg, i) in managementGroups: {
+  name: mg
+}]
+
+module singleMgModule 'managementGroup.bicep' = {
+  name: 'single-mg'
+  scope: mainMg
+}
+"));
+
+            result.Should().NotHaveAnyDiagnostics();
+        }
+
         [TestMethod]
         // https://github.com/Azure/bicep/issues/3617
         public void Test_Issue3617()
@@ -2437,6 +2472,50 @@ resource eventSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@
 ");
 
             result.Should().NotHaveAnyDiagnostics();
+        }
+
+        [TestMethod]
+        // https://github.com/Azure/bicep/issues/2990
+        public void Test_Issue2990()
+        {
+            var result = CompilationHelper.Compile(@"
+targetScope = 'managementGroup'
+
+param managementGroupName string
+param subscriptionId string
+
+resource myManagementGroup 'Microsoft.Management/managementGroups@2021-04-01' existing = {
+  scope: tenant()
+  name: managementGroupName
+}
+
+resource subscriptionAssociation 'Microsoft.Management/managementGroups/subscriptions@2021-04-01' = {
+  parent: myManagementGroup
+  name: subscriptionId
+}
+");
+
+            result.Should().NotHaveAnyDiagnostics();
+        }
+
+        [TestMethod]
+        // https://github.com/Azure/bicep/issues/4007
+        public void Test_Issue4007()
+        {
+            var result = CompilationHelper.Compile(@"
+targetScope = 'subscription'
+
+var map = {
+    '1': 'hello'
+}
+
+output one string = map['1']
+");
+
+            result.Template.Should().HaveValueAtPath("$.outputs.one.value", "[variables('map')['1']]");
+
+            var evaluated = TemplateEvaluator.Evaluate(result.Template);
+            evaluated.Should().HaveValueAtPath("$.outputs.one.value", "hello");
         }
 
         [TestMethod]
@@ -2479,6 +2558,170 @@ output deployedTopics array = [for (topicName, i) in topics: {
                 ["accessKey1"] = "[listKeys(resourceId('Microsoft.EventGrid/topics', 'myExistingEventGridTopic'), '2021-06-01-preview').key1]",
                 ["accessKey2"] = "[listKeys(resourceId('Microsoft.EventGrid/topics', format('{0}-ZZZ', variables('topics')[copyIndex()])), '2021-06-01-preview').key1]"
             });
+        }
+
+        [TestMethod]
+        // https://github.com/Azure/bicep/issues/4212
+        public void Test_Issue4212()
+        {
+            var result = CompilationHelper.Compile(
+                ("main.bicep", @"
+module mod 'mod.bicep' = {
+  name: 'mod'
+}
+
+resource res 'Microsoft.Network/virtualNetworks/subnets@2020-11-01' existing = {
+  name: 'abc/def'
+  parent: mod
+}
+
+resource res2 'Microsoft.Network/virtualNetworks/subnets@2020-11-01' existing = {
+  name: 'res2'
+  parent: tenant()
+}
+
+output test string = res.id
+"),
+                ("mod.bicep", ""));
+
+            result.Should().HaveDiagnostics(new[]
+            {
+                ("BCP036", DiagnosticLevel.Error, "The property \"parent\" expected a value of type \"Microsoft.Network/virtualNetworks\" but the provided value is of type \"module\"."),
+                ("BCP036", DiagnosticLevel.Error, "The property \"parent\" expected a value of type \"Microsoft.Network/virtualNetworks\" but the provided value is of type \"tenant\"."),
+            });
+        }
+        
+        // https://github.com/Azure/bicep/issues/4542
+        [TestMethod]
+        public void Test_Issue4542()
+        {
+            var result = CompilationHelper.Compile(@"
+param sasTokenBaseTime string = utcNow('u')
+param permissions string = 'adlrwu'
+
+var sasTokenParams = {
+  signedPermission: permissions
+  signedExpiry: dateTimeAdd(sasTokenBaseTime, 'PT96H')
+  signedProtocol: 'https'
+  signedResourceTypes: 'sco'
+  signedServices: 'b'
+}
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2019-04-01' = {
+  name: 'foo'
+  sku: {
+    name: 'Standard_RAGRS'
+  }
+  kind: 'StorageV2'
+  location: 'westus'
+
+  resource blob 'blobServices' = {
+    name: 'default'
+    resource container 'containers' = {
+      name: 'foo'
+      properties: {
+        publicAccess: 'None'
+      }
+    }
+  }
+}
+
+resource registry 'Microsoft.ContainerRegistry/registries@2019-12-01-preview' = {
+  name: 'foo'
+  location: 'westus'
+  sku: {
+    name: 'Premium'
+  }
+
+  resource importPipeline 'importPipelines' = {
+    name: 'foo'
+    location: 'westus'
+    identity: {
+      type: 'SystemAssigned'
+    }
+    properties: {
+      source: {
+        type: 'AzureStorageBlobContainer'
+        uri: uri(storageAccount.properties.primaryEndpoints.blob, storageAccount::blob::container.name)
+        keyVaultUri: kv::secret.properties.secretUri
+      }
+    }
+  }
+}
+
+resource kv 'Microsoft.KeyVault/vaults@2021-06-01-preview' existing = {
+  name: 'foo'
+
+  resource ap 'accessPolicies' = {
+    name: 'add'
+    properties: {
+      accessPolicies: [
+        {
+          tenantId: registry::importPipeline.identity.tenantId
+          objectId: registry::importPipeline.identity.principalId
+          permissions: {
+            secrets: [
+              'get'
+            ]
+          }
+        }
+      ]
+    }
+  }
+
+  resource secret 'secrets' = {
+    name: 'secretname'
+    properties: {
+      value: storageAccount.listAccountSas(storageAccount.apiVersion, sasTokenParams).accountSasToken
+    }
+    dependsOn: [
+      // the below dependency gets a stack overflow
+      ap
+    ]
+  }
+}
+");
+
+            result.Template.Should().NotHaveValue();
+            result.Should().HaveDiagnostics(new[] {
+                ("BCP080", DiagnosticLevel.Error, "The expression is involved in a cycle (\"secret\" -> \"ap\" -> \"importPipeline\")."),
+                ("BCP080", DiagnosticLevel.Error, "The expression is involved in a cycle (\"importPipeline\" -> \"secret\" -> \"ap\")."),
+                ("BCP080", DiagnosticLevel.Error, "The expression is involved in a cycle (\"importPipeline\" -> \"secret\" -> \"ap\")."),
+                ("BCP080", DiagnosticLevel.Error, "The expression is involved in a cycle (\"ap\" -> \"importPipeline\" -> \"secret\")."),
+            });
+        }
+
+        /// <summary>
+        /// https://github.com/Azure/bicep/issues/2703
+        /// </summary>
+        [TestMethod]
+        public void Test_Issue2703()
+        {
+            var result = CompilationHelper.Compile(@"
+resource test 'Microsoft.Resources/deploymentScripts@2020-10-01' existing = {
+  name: 'test'
+}
+
+output expTime string = test.properties.status.expirationTime
+");
+
+            result.Should().NotHaveAnyDiagnostics();
+        }
+
+        // https://github.com/Azure/bicep/issues/4565
+        [TestMethod]
+        public void Test_Issue4565()
+        {
+            var result = CompilationHelper.Compile(@"
+var port = 1234
+
+output test string = '${port}'
+");
+
+            result.Template.Should().HaveValueAtPath("$.outputs['test'].value", "[format('{0}', variables('port'))]");
+
+            var evaluated = TemplateEvaluator.Evaluate(result.Template);
+            evaluated.Should().HaveValueAtPath("$.outputs['test'].value", "1234", "the evaluated output should be of type string");
         }
     }
 }

@@ -28,16 +28,16 @@ module.exports = {
       use: ['file-loader']
     }]
   },
-  node: {
-    fs: 'empty',
-    child_process: 'empty',
-    net: 'empty',
-    crypto: 'empty'
-  },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
     alias: {
       'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
+    },
+    fallback: {
+      'crypto': false,
+      'os': false,
+      'path': false,
+      'net': false,
     },
   },
   plugins: [

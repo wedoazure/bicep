@@ -7,7 +7,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "17502682834592322985"
+      "templateHash": "12701705877588966173"
     }
   },
   "parameters": {
@@ -109,7 +109,7 @@
             },
             {
               "name": "WEBSITE_CONTENTSHARE",
-              "value": "[variables('componentBase')]"
+              "value": "[format('{0}', variables('componentBase'))]"
             }
           ]
         }
@@ -129,7 +129,7 @@
         "TXTRecords": [
           {
             "value": [
-              "[reference('functionApp').customDomainVerificationId]"
+              "[format('{0}', reference('functionApp').customDomainVerificationId)]"
             ]
           }
         ]
@@ -184,7 +184,7 @@
     },
     "functionAppCustomHostEnable": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
+      "apiVersion": "2020-06-01",
       "name": "[format('{0}-{1}-sni-enable', deployment().name, parameters('applicationName'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -196,7 +196,7 @@
             "value": "[resourceInfo('functionApp').name]"
           },
           "functionAppHostname": {
-            "value": "[resourceInfo('functionAppCustomHostCertificate').name]"
+            "value": "[format('{0}', resourceInfo('functionAppCustomHostCertificate').name)]"
           },
           "certificateThumbprint": {
             "value": "[reference('functionAppCustomHostCertificate').thumbprint]"

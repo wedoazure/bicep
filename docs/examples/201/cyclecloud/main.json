@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "532989114623656231"
+      "templateHash": "12514855640909406627"
     }
   },
   "parameters": {
@@ -67,7 +67,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
+      "apiVersion": "2020-06-01",
       "name": "network",
       "properties": {
         "expressionEvaluationOptions": {
@@ -189,7 +189,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
+      "apiVersion": "2020-06-01",
       "name": "cycleserver",
       "properties": {
         "expressionEvaluationOptions": {
@@ -204,7 +204,7 @@
             "value": "[variables('customData')]"
           },
           "subnetId": {
-            "value": "[format('{0}/subnets/Default', reference(resourceId('Microsoft.Resources/deployments', 'network'), '2019-10-01').outputs.vnetId.value)]"
+            "value": "[format('{0}/subnets/Default', reference(resourceId('Microsoft.Resources/deployments', 'network'), '2020-06-01').outputs.vnetId.value)]"
           },
           "userAssignedIdentity": {
             "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'CycleCloud-MI')]"
@@ -217,7 +217,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "18400785887121746615"
+              "templateHash": "14316110104637742647"
             }
           },
           "parameters": {
@@ -283,7 +283,7 @@
               "identity": {
                 "type": "UserAssigned",
                 "userAssignedIdentities": {
-                  "[parameters('userAssignedIdentity')]": {}
+                  "[format('{0}', parameters('userAssignedIdentity'))]": {}
                 }
               },
               "properties": {

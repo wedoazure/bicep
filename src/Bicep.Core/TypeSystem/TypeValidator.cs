@@ -86,72 +86,76 @@ namespace Bicep.Core.TypeSystem
                 return true;
             }
 
-            switch (targetType)
+            switch (sourceType, targetType)
             {
-                case AnyType _:
+                case (_, AnyType):
                     // values of all types can be assigned to the "any" type
                     return true;
 
-                case IScopeReference targetScope:
+                case (IScopeReference, IScopeReference):
                     // checking for valid combinations of scopes happens after type checking. this allows us to provide a richer & more intuitive error message.
-                    return sourceType is IScopeReference;
+                    return true;
 
-                case UnionType union when ReferenceEquals(union, LanguageConstants.ResourceOrResourceCollectionRefItem):
+                case (_, UnionType targetUnion) when ReferenceEquals(targetUnion, LanguageConstants.ResourceOrResourceCollectionRefItem):
                     return sourceType is IScopeReference || sourceType is ArrayType { Item: IScopeReference };
 
-                case TypeSymbol _ when sourceType is ResourceType sourceResourceType:
+                case (ResourceType sourceResourceType, ResourceParentType targetResourceParentType):
+                    // Assigning a resource to a parent property.
+                    return sourceResourceType.TypeReference.IsParentOf(targetResourceParentType.ChildTypeReference);
+
+                case (ResourceType sourceResourceType, _):
                     // When assigning a resource, we're really assigning the value of the resource body.
                     return AreTypesAssignable(sourceResourceType.Body.Type, targetType);
 
-                case TypeSymbol _ when sourceType is ModuleType sourceModuleType:
+                case (ModuleType sourceModuleType, _):
                     // When assigning a module, we're really assigning the value of the module body.
                     return AreTypesAssignable(sourceModuleType.Body.Type, targetType);
 
-                case StringLiteralType _ when sourceType is StringLiteralType:
+                case (StringLiteralType, StringLiteralType):
                     // The name *is* the escaped string value, so we must have an exact match.
                     return targetType.Name == sourceType.Name;
 
-                case StringLiteralType _ when sourceType is PrimitiveType:
+                case (PrimitiveType, StringLiteralType):
                     // We allow string to string literal assignment only in the case where the "AllowLooseStringAssignment" validation flag has been set.
                     // This is to allow parameters without 'allowed' values to be assigned to fields expecting enums.
                     // At some point we may want to consider flowing the enum type backwards to solve this more elegantly.
                     return sourceType.ValidationFlags.HasFlag(TypeSymbolValidationFlags.AllowLooseStringAssignment) && sourceType.Name == LanguageConstants.String.Name;
 
-                case PrimitiveType _ when sourceType is StringLiteralType:
+                case (StringLiteralType, PrimitiveType):
                     // string literals can be assigned to strings
                     return targetType.Name == LanguageConstants.String.Name;
 
-                case PrimitiveType _ when sourceType is PrimitiveType:
+                case (PrimitiveType, PrimitiveType):
                     // both types are primitive
                     // compare by type name
                     return string.Equals(sourceType.Name, targetType.Name, StringComparison.Ordinal);
 
-                case ObjectType _ when sourceType is ObjectType:
+                case (ObjectType, ObjectType):
                     // both types are objects
                     // this function does not implement any schema validation, so this is far as we go
                     return true;
 
-                case ArrayType _ when sourceType is ArrayType:
+                case (ArrayType, ArrayType):
                     // both types are arrays
                     // this function does not validate item types
                     return true;
 
-                case DiscriminatedObjectType _ when sourceType is DiscriminatedObjectType:
+                case (DiscriminatedObjectType, DiscriminatedObjectType):
                     // validation left for later
                     return true;
 
-                case DiscriminatedObjectType _ when sourceType is ObjectType:
+                case (ObjectType, DiscriminatedObjectType):
                     // validation left for later
                     return true;
 
-                case TypeSymbol _ when sourceType is UnionType sourceUnion:
+                case (UnionType sourceUnion, _):
                     // union types are guaranteed to be flat
 
                     // TODO: Replace with some sort of set intersection
                     // are all source type members assignable to the target type?
                     return sourceUnion.Members.All(sourceMember => AreTypesAssignable(sourceMember.Type, targetType) == true);
 
-                case UnionType targetUnion:
+                case (_, UnionType targetUnion):
                     // the source type should be a singleton type
                     Debug.Assert(!(sourceType is UnionType), "!(sourceType is UnionType)");
 
@@ -460,7 +464,7 @@ namespace Bicep.Core.TypeSystem
 
                 diagnosticWriter.Write(
                     config.OriginSyntax ?? positionable,
-                    x => x.MissingRequiredProperties(ShouldWarn(targetType), TryGetSourceDeclaration(config), missingRequiredProperties, blockName));
+                    x => x.MissingRequiredProperties(ShouldWarn(targetType), TryGetSourceDeclaration(config), expression, missingRequiredProperties, blockName));
             }
 
             var narrowedProperties = new List<TypeProperty>();
@@ -602,7 +606,7 @@ namespace Bicep.Core.TypeSystem
                 }
             }
 
-            return new ObjectType(targetType.Name, targetType.ValidationFlags, narrowedProperties, targetType.AdditionalPropertiesType, targetType.AdditionalPropertiesFlags, targetType.MethodResolver);
+            return new ObjectType(targetType.Name, targetType.ValidationFlags, narrowedProperties, targetType.AdditionalPropertiesType, targetType.AdditionalPropertiesFlags, targetType.MethodResolver.CopyToObject);
         }
 
         private (IPositionable positionable, string blockName) GetMissingPropertyContext(SyntaxBase expression)
@@ -614,6 +618,9 @@ namespace Bicep.Core.TypeSystem
             {
                 // for properties, put it on the property name in the parent object
                 ObjectPropertySyntax objectPropertyParent => (objectPropertyParent.Key, "object"),
+
+                // for import declarations, mark the entire configuration object
+                ImportDeclarationSyntax importParent => (expression, "object"),
 
                 // for declaration bodies, put it on the declaration identifier
                 ITopLevelNamedDeclarationSyntax declarationParent => (declarationParent.Name, declarationParent.Keyword.Text),
