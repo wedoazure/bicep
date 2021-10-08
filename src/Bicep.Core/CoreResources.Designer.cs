@@ -77,6 +77,18 @@ namespace Bicep.Core {
             }
         }
         
+        internal static string NoUnnecessaryDependsOnRuleDescription {
+            get {
+                return ResourceManager.GetString("NoUnnecessaryDependsOnRuleDescription", resourceCulture);
+            }
+        }
+        
+        internal static string NoUnnecessaryDependsOnRuleMessage {
+            get {
+                return ResourceManager.GetString("NoUnnecessaryDependsOnRuleMessage", resourceCulture);
+            }
+        }
+        
         internal static string LinterDisabledFormatMessage {
             get {
                 return ResourceManager.GetString("LinterDisabledFormatMessage", resourceCulture);
@@ -116,12 +128,6 @@ namespace Bicep.Core {
         internal static string SimplifyInterpolationRuleDescription {
             get {
                 return ResourceManager.GetString("SimplifyInterpolationRuleDescription", resourceCulture);
-            }
-        }
-        
-        internal static string UnnecessaryDependsOnRuleDescription {
-            get {
-                return ResourceManager.GetString("UnnecessaryDependsOnRuleDescription", resourceCulture);
             }
         }
         
