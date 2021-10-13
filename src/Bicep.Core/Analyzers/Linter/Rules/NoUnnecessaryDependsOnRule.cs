@@ -34,7 +34,7 @@ namespace Bicep.Core.Analyzers.Linter.Rules
         public override IEnumerable<IDiagnostic> AnalyzeInternal(SemanticModel model)
         {
             ImmutableDictionary<DeclaredSymbol, ImmutableHashSet<ResourceDependency>> inferredDependenciesMap =
-                ResourceDependencyVisitor.GetResourceDependencies(model, new ResourceDependencyVisitor.Options { IgnoreDependsOnProperties = true });
+                ResourceDependencyVisitor.GetResourceDependencies(model, new ResourceDependencyVisitor.Options { IgnoreExplicitDependsOn = true });
             var visitor = new ResourceVisitor(this, inferredDependenciesMap, model);
             visitor.Visit(model.SourceFile.ProgramSyntax);
             return visitor.diagnostics;
