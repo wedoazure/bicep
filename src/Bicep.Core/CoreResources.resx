@@ -130,15 +130,12 @@
   <data name="EnvironmentUrlHardcodedRuleDescription" xml:space="preserve">
     <value>Environment URLs should not be hardcoded. Use the environment() function to ensure compatibility across clouds.</value>
   </data>
+	<data name="InterpolateNotConcatFixTitle" xml:space="preserve">
+    <value>Use string interpolation: {0}.</value>
+    <commment>{0} is a programmatic language expression</comment>
+  </data>
 	<data name="InterpolateNotConcatRuleDescription" xml:space="preserve">
     <value>Use string interpolation instead of the concat function.</value>
-  </data>
-	<data name="NoUnnecessaryDependsOnRuleDescription" xml:space="preserve">
-    <value>No unnecessary dependsOn.</value>
-  </data>
-	<data name="NoUnnecessaryDependsOnRuleMessage" xml:space="preserve">
-    <value>Remove unnecessary dependsOn entry '{0}'.</value>
-    <comment>{0} is a programmatic expression</comment>
   </data>
 	<data name="LinterDisabledFormatMessage" xml:space="preserve">
     <value>Linter is disabled in settings file located at {0} </value>
@@ -151,6 +148,13 @@
 	<data name="LocationSetByParameterRuleDescription" xml:space="preserve">
     <value>Resource location should be specified by a parameter with no default value or one that defaults to 'global' or resourceGroup().location.</value>
   </data>
+	<data name="NoUnnecessaryDependsOnRuleDescription" xml:space="preserve">
+    <value>No unnecessary dependsOn.</value>
+  </data>
+	<data name="NoUnnecessaryDependsOnRuleMessage" xml:space="preserve">
+    <value>Remove unnecessary dependsOn entry '{0}'.</value>
+    <comment>Text for linter rule error. {0} is a programmatic expression</comment>
+  </data>
 	<data name="ParameterMustBeUsedRuleDescription" xml:space="preserve">
     <value>No unused parameters.</value>
   </data>
@@ -158,8 +162,14 @@
     <value>Parameter "{0}" is declared but never used.</value>
     <comment>{0} is the paramenter name</comment>
   </data>
+	<data name="SecureParameterDefaultFixTitle" xml:space="preserve">
+    <value>Remove default value.</value>
+  </data>
 	<data name="SecureParameterDefaultRuleDescription" xml:space="preserve">
     <value>Secure parameters should not have hardcoded defaults (except for empty or newGuid()).</value>
+  </data>
+	<data name="SimplifyInterpolationFixTitle" xml:space="preserve">
+    <value>Remove unnecessary string interpolation.</value>
   </data>
 	<data name="SimplifyInterpolationRuleDescription" xml:space="preserve">
     <value>Remove unnecessary string interpolation.</value>

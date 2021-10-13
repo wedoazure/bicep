@@ -71,21 +71,15 @@ namespace Bicep.Core {
             }
         }
         
+        internal static string InterpolateNotConcatFixTitle {
+            get {
+                return ResourceManager.GetString("InterpolateNotConcatFixTitle", resourceCulture);
+            }
+        }
+        
         internal static string InterpolateNotConcatRuleDescription {
             get {
                 return ResourceManager.GetString("InterpolateNotConcatRuleDescription", resourceCulture);
-            }
-        }
-        
-        internal static string NoUnnecessaryDependsOnRuleDescription {
-            get {
-                return ResourceManager.GetString("NoUnnecessaryDependsOnRuleDescription", resourceCulture);
-            }
-        }
-        
-        internal static string NoUnnecessaryDependsOnRuleMessage {
-            get {
-                return ResourceManager.GetString("NoUnnecessaryDependsOnRuleMessage", resourceCulture);
             }
         }
         
@@ -107,6 +101,18 @@ namespace Bicep.Core {
             }
         }
         
+        internal static string NoUnnecessaryDependsOnRuleDescription {
+            get {
+                return ResourceManager.GetString("NoUnnecessaryDependsOnRuleDescription", resourceCulture);
+            }
+        }
+        
+        internal static string NoUnnecessaryDependsOnRuleMessage {
+            get {
+                return ResourceManager.GetString("NoUnnecessaryDependsOnRuleMessage", resourceCulture);
+            }
+        }
+        
         internal static string ParameterMustBeUsedRuleDescription {
             get {
                 return ResourceManager.GetString("ParameterMustBeUsedRuleDescription", resourceCulture);
@@ -122,6 +128,18 @@ namespace Bicep.Core {
         internal static string SecureParameterDefaultRuleDescription {
             get {
                 return ResourceManager.GetString("SecureParameterDefaultRuleDescription", resourceCulture);
+            }
+        }
+        
+        internal static string SecureParameterDefaultFixTitle {
+            get {
+                return ResourceManager.GetString("SecureParameterDefaultFixTitle", resourceCulture);
+            }
+        }
+        
+        internal static string SimplifyInterpolationFixTitle {
+            get {
+                return ResourceManager.GetString("SimplifyInterpolationFixTitle", resourceCulture);
             }
         }
         
