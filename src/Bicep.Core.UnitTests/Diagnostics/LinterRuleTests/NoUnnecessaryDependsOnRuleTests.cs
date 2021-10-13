@@ -94,7 +94,7 @@ namespace Bicep.Core.UnitTests.Diagnostics.LinterRuleTests
             ",
               OnCompileErrors.Fail,
               new string[] {
-                "Remove unnecessary dependsOn entry to 'appServicePlan'."
+                "Remove unnecessary dependsOn entry 'appServicePlan'."
               }
             );
         }
@@ -126,7 +126,7 @@ namespace Bicep.Core.UnitTests.Diagnostics.LinterRuleTests
             ",
               OnCompileErrors.Fail,
               new string[] {
-                "Remove unnecessary dependsOn entry to 'appServicePlan'."
+                "Remove unnecessary dependsOn entry 'appServicePlan'."
               });
         }
 
@@ -161,7 +161,7 @@ namespace Bicep.Core.UnitTests.Diagnostics.LinterRuleTests
               OnCompileErrors.Fail,
               new string[] {
                 "" +
-                "Remove unnecessary dependsOn entry to 'vnet'."
+                "Remove unnecessary dependsOn entry 'vnet'."
               });
         }
 
@@ -195,7 +195,7 @@ namespace Bicep.Core.UnitTests.Diagnostics.LinterRuleTests
             ",
               OnCompileErrors.Fail,
               new string[] {
-              "Remove unnecessary dependsOn entry to 'vnet'."
+              "Remove unnecessary dependsOn entry 'vnet'."
               }
             );
         }
@@ -230,8 +230,8 @@ namespace Bicep.Core.UnitTests.Diagnostics.LinterRuleTests
             ",
               OnCompileErrors.Fail,
               new string[] {
-                "Remove unnecessary dependsOn entry to 'vn'.",
-                "Remove unnecessary dependsOn entry to 'vn'."
+                "Remove unnecessary dependsOn entry 'vn'.",
+                "Remove unnecessary dependsOn entry 'vn'."
               }
             );
         }
@@ -275,10 +275,10 @@ namespace Bicep.Core.UnitTests.Diagnostics.LinterRuleTests
                 ",
                 OnCompileErrors.Fail,
                 new string[] {
-                    "Remove unnecessary dependsOn entry to 'grandparent'.",
-                    "Remove unnecessary dependsOn entry to 'parent'.",
-                    "Remove unnecessary dependsOn entry to 'parent'.",
-                    "Remove unnecessary dependsOn entry to 'grandchild'.",
+                    "Remove unnecessary dependsOn entry 'grandparent'.",
+                    "Remove unnecessary dependsOn entry 'parent'.",
+                    "Remove unnecessary dependsOn entry 'parent'.",
+                    "Remove unnecessary dependsOn entry 'grandchild'.",
             });
         }
 
@@ -300,7 +300,7 @@ namespace Bicep.Core.UnitTests.Diagnostics.LinterRuleTests
             ",
               OnCompileErrors.Fail,
               new string[] {
-                "Remove unnecessary dependsOn entry to 'vn'."
+                "Remove unnecessary dependsOn entry 'vn'."
               }
             );
         }
