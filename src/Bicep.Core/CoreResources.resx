@@ -132,7 +132,7 @@
   </data>
 	<data name="InterpolateNotConcatFixTitle" xml:space="preserve">
     <value>Use string interpolation: {0}.</value>
-    <commment>{0} is a programmatic language expression</comment>
+    <comment>{0} is a programmatic language expression</comment>
   </data>
 	<data name="InterpolateNotConcatRuleDescription" xml:space="preserve">
     <value>Use string interpolation instead of the concat function.</value>
@@ -179,6 +179,5 @@
   </data>
 	<data name="UnusedVariableRuleMessageFormat" xml:space="preserve">
     <value>Variable "{0}" is declared but never used.</value>
-    <comment>.</comment>
   </data>
 </root>
