@@ -1,4 +1,4 @@
-// $1 = networkSecurityGroup
+﻿// $1 = networkSecurityGroup
 // $2 = 'name'
 // $3 = 'nsgRule'
 // $4 = 'description'
@@ -11,9 +11,11 @@
 // $11 = 100
 // $12 = 'Inbound'
 
+param location string
+
 resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2019-11-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     securityRules: [
       {
@@ -34,4 +36,3 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2019-11-0
   }
 }
 // Insert snippet here
-

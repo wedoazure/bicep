@@ -1,4 +1,4 @@
-// $1 = aksCluster
+﻿// $1 = aksCluster
 // $2 = 'name'
 // $3 = 1.19.7
 // $4 = 'dnsPrefix'
@@ -8,10 +8,11 @@
 // $8 = 'REQUIRED'
 
 param adminUsername string
+param location string
 
 resource aksCluster 'Microsoft.ContainerService/managedClusters@2021-03-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   identity: {
     type: 'SystemAssigned'
   }
@@ -41,4 +42,3 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2021-03-01' = {
   }
 }
 // Insert snippet here
-

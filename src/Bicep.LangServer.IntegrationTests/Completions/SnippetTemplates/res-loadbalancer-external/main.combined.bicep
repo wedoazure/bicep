@@ -1,4 +1,4 @@
-// $1 = loadBalancerExternal
+﻿// $1 = loadBalancerExternal
 // $2 = 'name'
 // $3 = 'name'
 // $4 = 'publicIPAddresses.id'
@@ -19,9 +19,11 @@
 // $19 = Tcp
 // $20 = 80
 
+param location string
+
 resource loadBalancerExternal 'Microsoft.Network/loadBalancers@2020-11-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     frontendIPConfigurations: [
       {
@@ -57,7 +59,7 @@ resource loadBalancerExternal 'Microsoft.Network/loadBalancers@2020-11-01' = {
         name: 'name'
         properties: {
           frontendIPConfiguration: {
-             id: 'frontendIPConfiguration.id'
+            id: 'frontendIPConfiguration.id'
           }
           backendAddressPool: {
             id: 'backendAddressPool.id'
@@ -87,4 +89,3 @@ resource loadBalancerExternal 'Microsoft.Network/loadBalancers@2020-11-01' = {
   }
 }
 // Insert snippet here
-

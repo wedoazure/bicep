@@ -1,4 +1,4 @@
-// $1 = containerGroup
+﻿// $1 = containerGroup
 // $2 = 'name'
 // $3 = 'containername'
 // $4 = 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
@@ -10,9 +10,11 @@
 // $10 = 'TCP'
 // $11 = 80
 
+param location string
+
 resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-03-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     containers: [
       {
@@ -47,4 +49,3 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-03-01'
   }
 }
 // Insert snippet here
-

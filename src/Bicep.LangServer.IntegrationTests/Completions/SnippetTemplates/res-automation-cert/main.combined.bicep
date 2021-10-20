@@ -6,6 +6,8 @@
 // $6 = 'thumbprint'
 // $7 = true
 
+param location string
+
 resource automationAccount 'Microsoft.Automation/automationAccounts@2019-06-01' = {
   name: 'name'
 }
@@ -21,4 +23,3 @@ resource automationCertificate 'Microsoft.Automation/automationAccounts/certific
   }
 }
 // Insert snippet here
-

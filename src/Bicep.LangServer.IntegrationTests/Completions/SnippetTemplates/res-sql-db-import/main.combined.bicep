@@ -1,15 +1,16 @@
 // $1 = 'sqlDatabase/import'
-// $2 = 'location'
-// $3 = sqlDatabaseImport
-// $4 = StorageAccessKey
-// $5 = 'storageKey'
-// $6 = 'storageUri'
-// $7 = 'administratorLogin'
-// $8 = 'administratorLoginPassword'
+// $2 = sqlDatabaseImport
+// $3 = StorageAccessKey
+// $4 = 'storageKey'
+// $5 = 'storageUri'
+// $6 = 'administratorLogin'
+// $7 = 'administratorLoginPassword'
+
+param location string
 
 resource sqlServerDatabase 'Microsoft.Sql/servers/databases@2014-04-01' = {
   name: 'sqlDatabase/import'
-  location: 'location'
+  location: location
 }
 
 resource sqlDatabaseImport 'Microsoft.Sql/servers/databases/extensions@2014-04-01' = {
@@ -25,4 +26,3 @@ resource sqlDatabaseImport 'Microsoft.Sql/servers/databases/extensions@2014-04-0
   }
 }
 // Insert snippet here
-

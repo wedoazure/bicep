@@ -1,4 +1,4 @@
-// $1 = windowsVM
+﻿// $1 = windowsVM
 // $2 = 'name'
 // $3 = 'computerName'
 // $4 = adminUsername
@@ -8,10 +8,11 @@
 // $8 = 'storageUri'
 
 param adminUsername string
+param location string
 
 resource windowsVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     hardwareProfile: {
       vmSize: 'Standard_A2_v2'
@@ -44,10 +45,9 @@ resource windowsVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
     diagnosticsProfile: {
       bootDiagnostics: {
         enabled: true
-        storageUri:  'storageUri'
+        storageUri: 'storageUri'
       }
     }
   }
 }
 // Insert snippet here
-

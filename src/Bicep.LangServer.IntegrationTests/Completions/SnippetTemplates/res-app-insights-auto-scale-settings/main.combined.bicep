@@ -1,4 +1,4 @@
-// $1 = appInsightsAutoScaleSettings
+﻿// $1 = appInsightsAutoScaleSettings
 // $2 = 'name'
 // $3 = web
 // $4 = appServiceId
@@ -15,9 +15,11 @@
 // $15 = 'value'
 // $16 = 'metricResourceUri'
 
+param location string
+
 resource appInsightsAutoScaleSettings 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   tags: {
     Application_Type: 'web'
     'hidden-link:appServiceId': 'Resource'
@@ -47,7 +49,7 @@ resource appInsightsAutoScaleSettings 'Microsoft.Insights/autoscalesettings@2015
             scaleAction: {
               direction: 'Increase'
               type: 'ChangeCount'
-              value:  'value'
+              value: 'value'
               cooldown: 'PT10M'
             }
           }
@@ -77,4 +79,3 @@ resource appInsightsAutoScaleSettings 'Microsoft.Insights/autoscalesettings@2015
   }
 }
 // Insert snippet here
-

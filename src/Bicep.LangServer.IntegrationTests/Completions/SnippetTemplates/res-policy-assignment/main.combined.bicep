@@ -1,22 +1,23 @@
 // $1 = policyAssignment
 // $2 = 'name'
-// $3 = 'location'
-// $4 = 'SystemAssigned'
-// $5 = 'displayName'
-// $6 = 'description'
-// $7 = 'Default'
-// $8 = 'source'
-// $9 = '0.1.0'
-// $10 = 'policyDefinitionId'
-// $11 = parameterName
-// $12 = 'value'
+// $3 = 'SystemAssigned'
+// $4 = 'displayName'
+// $5 = 'description'
+// $6 = 'Default'
+// $7 = 'source'
+// $8 = '0.1.0'
+// $9 = 'policyDefinitionId'
+// $10 = parameterName
+// $11 = 'value'
+// $12 = 'message'
 // $13 = 'message'
-// $14 = 'message'
-// $15 = 'policyDefinitionReferenceId'
+// $14 = 'policyDefinitionReferenceId'
+
+param location string
 
 resource policyAssignment 'Microsoft.Authorization/policyAssignments@2020-09-01' = {
   name: 'name'
-  location: 'location'
+  location: location
   identity: {
     type: 'SystemAssigned'
   }
@@ -46,4 +47,3 @@ resource policyAssignment 'Microsoft.Authorization/policyAssignments@2020-09-01'
   }
 }
 // Insert snippet here
-

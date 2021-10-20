@@ -1,4 +1,4 @@
-// $1 = apiManagementInstance
+﻿// $1 = apiManagementInstance
 // $2 = 'name'
 // $3 = 1
 // $4 = 'Developer'
@@ -6,18 +6,19 @@
 // $6 = 'publisherEmail@contoso.com'
 // $7 = 'publisherName'
 
+param location string
+
 resource apiManagementInstance 'Microsoft.ApiManagement/service@2020-12-01' = {
   name: 'name'
-  location: resourceGroup().location
-  sku:{
+  location: location
+  sku: {
     capacity: 1
     name: 'Developer'
   }
-  properties:{
+  properties: {
     virtualNetworkType: 'None'
     publisherEmail: 'publisherEmail@contoso.com'
     publisherName: 'publisherName'
   }
 }
 // Insert snippet here
-

@@ -1,4 +1,4 @@
-// $1 = vpnVnetConnection
+﻿// $1 = vpnVnetConnection
 // $2 = 'name'
 // $3 = 'virtualNetworkGateways.id'
 // $4 = 'localNetworkGateways.id'
@@ -6,17 +6,19 @@
 // $6 = 0
 // $7 = 'sharedkey'
 
+param location string
+
 resource vpnVnetConnection 'Microsoft.Network/connections@2020-11-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     virtualNetworkGateway1: {
       id: 'virtualNetworkGateways.id'
-      properties:{}
+      properties: {}
     }
     localNetworkGateway2: {
       id: 'localNetworkGateways.id'
-      properties:{}
+      properties: {}
     }
     connectionType: 'IPsec'
     routingWeight: 0
@@ -24,4 +26,3 @@ resource vpnVnetConnection 'Microsoft.Network/connections@2020-11-01' = {
   }
 }
 // Insert snippet here
-

@@ -1,19 +1,21 @@
-// $1 = 'name'
+﻿// $1 = 'name'
 // $2 = guestConfigAssignment
 // $3 = 'name'
 // $4 = 'configurationName'
 // $5 = 'ApplyAndMonitor'
 // $6 = '1.*'
 
+param location string
+
 resource arcEnabledMachine 'Microsoft.HybridCompute/machines@2021-05-20' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
 }
 
 resource guestConfigAssignment 'Microsoft.GuestConfiguration/guestConfigurationAssignments@2020-06-25' = {
   name: 'name'
   scope: arcEnabledMachine
-  location: resourceGroup().location
+  location: location
   properties: {
     guestConfiguration: {
       name: 'configurationName'
@@ -23,4 +25,3 @@ resource guestConfigAssignment 'Microsoft.GuestConfiguration/guestConfigurationA
   }
 }
 // Insert snippet here
-

@@ -1,18 +1,20 @@
-// $1 = 'name'
+﻿// $1 = 'name'
 // $2 = windowsVMExtensions
 // $3 = 'name'
 // $4 = 'fileUris'
 // $5 = customScript.ps1
 
+param location string
+
 resource virtualMachine 'Microsoft.Compute/virtualMachines@2020-12-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
 }
 
 resource windowsVMExtensions 'Microsoft.Compute/virtualMachines/extensions@2020-12-01' = {
   parent: virtualMachine
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     publisher: 'Microsoft.Compute'
     type: 'CustomScriptExtension'
@@ -29,4 +31,3 @@ resource windowsVMExtensions 'Microsoft.Compute/virtualMachines/extensions@2020-
   }
 }
 // Insert snippet here
-

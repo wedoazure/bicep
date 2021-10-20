@@ -1,16 +1,17 @@
-// $1 = redisCache
+﻿// $1 = redisCache
 // $2 = 'name'
+
+param location string
 
 resource redisCache 'Microsoft.Cache/Redis@2019-07-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     sku: {
       name: 'Basic'
       family: 'C'
       capacity: 0
-    }
+    }test
   }
 }
 // Insert snippet here
-

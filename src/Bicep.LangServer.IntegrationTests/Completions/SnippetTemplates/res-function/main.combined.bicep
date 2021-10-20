@@ -1,4 +1,4 @@
-// $1 = azureFunction
+﻿// $1 = azureFunction
 // $2 = 'name'
 // $3 = 'serverfarms.id'
 // $4 = storageAccountName1
@@ -11,10 +11,11 @@
 // $11 = 'insightsComponents'
 // $12 = dotnet
 
+param location string
 
 resource azureFunction 'Microsoft.Web/sites@2020-12-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   kind: 'functionapp'
   properties: {
     serverFarmId: 'serverfarms.id'
@@ -53,4 +54,3 @@ resource azureFunction 'Microsoft.Web/sites@2020-12-01' = {
   }
 }
 // Insert snippet here
-

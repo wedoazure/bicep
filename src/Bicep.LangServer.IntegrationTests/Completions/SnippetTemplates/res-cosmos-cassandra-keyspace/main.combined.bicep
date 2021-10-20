@@ -3,6 +3,8 @@
 // $3 = 'id'
 // $4 = 1000
 
+param location string
+
 resource cassandraKeyspace 'Microsoft.DocumentDB/databaseAccounts/cassandraKeyspaces@2021-06-15' = {
   name: 'accountName/databaseName'
   properties: {
@@ -15,4 +17,3 @@ resource cassandraKeyspace 'Microsoft.DocumentDB/databaseAccounts/cassandraKeysp
   }
 }
 // Insert snippet here
-

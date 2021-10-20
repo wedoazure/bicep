@@ -1,11 +1,13 @@
-// $1 = keyVault
+﻿// $1 = keyVault
 // $2 = 'name'
 // $3 = 'tenantId'
 // $4 = 'objectId'
 
+param location string
+
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     enabledForDeployment: true
     enabledForTemplateDeployment: true
@@ -33,4 +35,3 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   }
 }
 // Insert snippet here
-

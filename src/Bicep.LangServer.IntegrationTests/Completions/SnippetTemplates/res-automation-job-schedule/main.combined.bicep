@@ -4,6 +4,8 @@
 // $4 = 'name'
 // $5 = 'name'
 
+param location string
+
 resource automationAccount 'Microsoft.Automation/automationAccounts@2019-06-01' = {
   name: 'name'
 }
@@ -21,4 +23,3 @@ resource automationJobSchedule 'Microsoft.Automation/automationAccounts/jobSched
   }
 }
 // Insert snippet here
-

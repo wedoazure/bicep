@@ -1,4 +1,4 @@
-// $1 = applicationGateway
+﻿// $1 = applicationGateway
 // $2 = 'name'
 // $3 = Standard_Small
 // $4 = Standard
@@ -23,9 +23,11 @@
 // $23 = 'id'
 // $24 = 'id'
 
+param location string
+
 resource applicationGateway 'Microsoft.Network/applicationGateways@2020-11-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     sku: {
       name: 'Standard_Small'
@@ -110,4 +112,3 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2020-11-01' =
   }
 }
 // Insert snippet here
-

@@ -1,4 +1,4 @@
-// $1 = appInsightsAlertRules
+﻿// $1 = appInsightsAlertRules
 // $2 = 'name'
 // $3 = 'name'
 // $4 = 'description'
@@ -9,9 +9,11 @@
 // $9 = 'windowSize'
 // $10 = Microsoft.Azure.Management.Insights.Models.RuleEmailAction
 
+param location string
+
 resource appInsightsAlertRules 'Microsoft.Insights/alertrules@2016-03-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     name: 'name'
     description: 'description'
@@ -32,4 +34,3 @@ resource appInsightsAlertRules 'Microsoft.Insights/alertrules@2016-03-01' = {
   }
 }
 // Insert snippet here
-

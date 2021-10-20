@@ -1,4 +1,4 @@
-// $1 = virtualNetworkGateway
+﻿// $1 = virtualNetworkGateway
 // $2 = 'name'
 // $3 = 'name'
 // $4 = 'subnet.id'
@@ -9,9 +9,11 @@
 // $9 = PolicyBased
 // $10 = true
 
+param location string
+
 resource virtualNetworkGateway 'Microsoft.Network/virtualNetworkGateways@2020-11-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     ipConfigurations: [
       {
@@ -37,4 +39,3 @@ resource virtualNetworkGateway 'Microsoft.Network/virtualNetworkGateways@2020-11
   }
 }
 // Insert snippet here
-

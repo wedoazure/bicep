@@ -1,4 +1,4 @@
-// $1 = loadBalancerInternal
+﻿// $1 = loadBalancerInternal
 // $2 = 'name'
 // $3 = 'name'
 // $4 = '0.0.0.0'
@@ -15,9 +15,11 @@
 // $15 = Tcp
 // $16 = 80
 
+param location string
+
 resource loadBalancerInternal 'Microsoft.Network/loadBalancers@2020-11-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     frontendIPConfigurations: [
       {
@@ -71,4 +73,3 @@ resource loadBalancerInternal 'Microsoft.Network/loadBalancers@2020-11-01' = {
   }
 }
 // Insert snippet here
-

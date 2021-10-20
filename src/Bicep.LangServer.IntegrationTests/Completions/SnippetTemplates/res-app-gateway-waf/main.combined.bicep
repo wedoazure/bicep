@@ -1,4 +1,4 @@
-// $1 = applicationGatewayFirewall
+﻿// $1 = applicationGatewayFirewall
 // $2 = 'name'
 // $3 = true
 // $4 = 128
@@ -8,9 +8,11 @@
 // $8 = 'ruleSetType'
 // $9 = 'ruleSetVersion'
 
+param location string
+
 resource applicationGatewayFirewall 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2020-11-01' = {
   name: 'name'
-  location: resourceGroup().location
+  location: location
   properties: {
     policySettings: {
       requestBodyCheck: true
@@ -30,4 +32,3 @@ resource applicationGatewayFirewall 'Microsoft.Network/ApplicationGatewayWebAppl
   }
 }
 // Insert snippet here
-
