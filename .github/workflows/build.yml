@@ -60,6 +60,8 @@ jobs:
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1.8.2
+        with:
+          include-prerelease: true
       
       - name: Build
         run: dotnet build --configuration ${{ matrix.configuration }}
@@ -215,6 +217,8 @@ jobs:
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1.8.2
+        with:
+          include-prerelease: true
       
       - name: Download Bicep CLI
         uses: actions/download-artifact@v2
@@ -261,6 +265,8 @@ jobs:
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1.8.2
+        with:
+          include-prerelease: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v2.4.1
@@ -419,6 +425,8 @@ jobs:
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1.8.2
+        with:
+          include-prerelease: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v2.4.1
@@ -456,6 +464,8 @@ jobs:
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1.8.2
+        with:
+          include-prerelease: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v2.4.1
