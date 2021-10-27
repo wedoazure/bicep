@@ -13,6 +13,9 @@
     <!-- disable nuget packing on all projects by default -->
     <IsPackable>false</IsPackable>
     <RuntimeIdentifiers>win-x64;linux-x64;linux-musl-x64;osx-x64</RuntimeIdentifiers>
+    <!-- Restore .net 5 trimming behavior and disable trim errors -->
+    <TrimMode>copyused</TrimMode>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
   <ItemGroup>
