@@ -9,6 +9,8 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <!-- enable trimming analyzer and disable trim-incompatible runtime features -->
     <PublishTrimmed>true</PublishTrimmed>
+    <!-- this seems super unsafe -->
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
   <ItemGroup>
