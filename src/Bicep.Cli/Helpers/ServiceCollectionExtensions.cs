@@ -5,6 +5,7 @@ using Bicep.Cli.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Bicep.Cli.Helpers
@@ -29,18 +30,12 @@ namespace Bicep.Cli.Helpers
         /// </remarks>
         public static IServiceCollection AddCommands(this IServiceCollection services)
         {
-            Type grabCommandType = typeof(BuildCommand);
-            Type commandType = typeof(ICommand);
-
-            IEnumerable<Type> commands = grabCommandType
-                .Assembly
-                .GetExportedTypes()
-                 .Where(x => x.Namespace == grabCommandType.Namespace && x.GetInterfaces().Contains(commandType));
-
-            foreach (Type command in commands)
-            {
-                services.AddSingleton(command);
-            }
+            // using reflection here causes errors from the trim analyzer
+            services.AddSingleton<RootCommand>();
+            services.AddSingleton<BuildCommand>();
+            services.AddSingleton<DecompileCommand>();
+            services.AddSingleton<PublishCommand>();
+            services.AddSingleton<RestoreCommand>();
 
             return services;
         }

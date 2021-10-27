@@ -3,6 +3,7 @@
 
 using Bicep.Core.Json;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Bicep.Core.Extensions
@@ -20,6 +21,7 @@ namespace Bicep.Core.Extensions
         public static string ToNonNullString(this JsonElement element) =>
             element.GetString() ?? throw new JsonException($"Expected \"{element}\" to be non-null.");
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Reflection done by deserialize should be operating on types that are referenced elsewhere.")]
         public static T ToNonNullObject<T>(this JsonElement element, JsonSerializerOptions? options = null)
         {
             options ??= DefaultDeserializeOptions;

@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection;
 using Azure.Deployments.Core.Extensions;
 using Bicep.Core.Analyzers.Interfaces;
+using Bicep.Core.Analyzers.Linter.Rules;
 using Bicep.Core.Configuration;
 using Bicep.Core.Diagnostics;
 using Bicep.Core.Parsing;
@@ -47,30 +47,33 @@ namespace Bicep.Core.Analyzers.Linter
             var errors = new List<IDiagnostic>();
             var rules = new List<IBicepAnalyzerRule>();
 
-            var ruleTypes = Assembly.GetExecutingAssembly()
-                .GetTypes()
-                .Where(t => typeof(IBicepAnalyzerRule).IsAssignableFrom(t)
-                            && t.IsClass
-                            && t.IsPublic
-                            && t.GetConstructor(Type.EmptyTypes) != null);
-
-            foreach (var ruleType in ruleTypes)
-            {
-                try
-                {
-                    rules.Add(Activator.CreateInstance(ruleType) as IBicepAnalyzerRule ?? throw new InvalidOperationException($"Failed to create an instance of \"{ruleType.Name}\"."));
-                }
-                catch (Exception ex)
-                {
-                    string message = string.Format("Analyzer '{0}' could not instantiate rule '{1}'. {2}",
-                        AnalyzerName,
-                        ruleType.Name,
-                        ex.InnerException?.Message ?? ex.Message);
-                    errors.Add(CreateInternalErrorDiagnostic(AnalyzerName, message));
-                }
-            }
+            // doing this by reflection is not trimming safe
+            CreateLinterRule<AdminUsernameShouldNotBeLiteralRule>(rules, errors);
+            CreateLinterRule<NoHardcodedEnvironmentUrlsRule>(rules, errors);
+            CreateLinterRule<NoUnusedParametersRule>(rules, errors);
+            CreateLinterRule<NoUnusedVariablesRule>(rules, errors);
+            CreateLinterRule<PreferInterpolationRule>(rules, errors);
+            CreateLinterRule<SecureParameterDefaultRule>(rules, errors);
+            CreateLinterRule<SimplifyInterpolationRule>(rules, errors);
+            CreateLinterRule <UseStableVMImageRule>(rules, errors);
 
             return (rules.ToImmutableArray(), errors.ToImmutableArray());
+        }
+
+        private static void CreateLinterRule<T>(IList<IBicepAnalyzerRule> rules, IList<IDiagnostic> errors) where T : IBicepAnalyzerRule, new()
+        {
+            try
+            {
+                rules.Add(new T());
+            }
+            catch (Exception ex)
+            {
+                string message = string.Format("Analyzer '{0}' could not instantiate rule '{1}'. {2}",
+                    AnalyzerName,
+                    typeof(T).Name,
+                    ex.InnerException?.Message ?? ex.Message);
+                errors.Add(CreateInternalErrorDiagnostic(AnalyzerName, message));
+            }
         }
 
         public IEnumerable<IBicepAnalyzerRule> GetRuleSet() => ruleSet;

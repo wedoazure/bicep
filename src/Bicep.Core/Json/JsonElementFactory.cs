@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -43,6 +44,7 @@ namespace Bicep.Core.Json
             return document.RootElement.Clone();
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Reflection done by serialization should be operating on types that are referenced elsewhere.")]
         public static JsonElement CreateElement<T>(T value, JsonSerializerOptions? options = null)
         {
             if (value is JsonElement element)
