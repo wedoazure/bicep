@@ -1,4 +1,4 @@
-﻿// $1 = loadBalancerExternal
+// $1 = loadBalancerExternal
 // $2 = 'name'
 // $3 = 'name'
 // $4 = 'publicIPAddresses.id'
@@ -59,7 +59,7 @@ resource loadBalancerExternal 'Microsoft.Network/loadBalancers@2020-11-01' = {
         name: 'name'
         properties: {
           frontendIPConfiguration: {
-            id: 'frontendIPConfiguration.id'
+             id: 'frontendIPConfiguration.id'
           }
           backendAddressPool: {
             id: 'backendAddressPool.id'
@@ -89,3 +89,4 @@ resource loadBalancerExternal 'Microsoft.Network/loadBalancers@2020-11-01' = {
   }
 }
 // Insert snippet here
+

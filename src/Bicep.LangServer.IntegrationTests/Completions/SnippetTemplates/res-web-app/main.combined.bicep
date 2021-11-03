@@ -1,4 +1,4 @@
-﻿// $1 = webApplication
+// $1 = webApplication
 // $2 = 'name'
 // $3 = appServicePlan
 // $4 = 'webServerFarms.id'
@@ -14,4 +14,5 @@ resource webApplication 'Microsoft.Web/sites@2018-11-01' = {
   properties: {
     serverFarmId: 'webServerFarms.id'
   }
-} // Insert snippet here
+}// Insert snippet here
+

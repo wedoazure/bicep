@@ -1,4 +1,4 @@
-﻿// $1 = 'name'
+// $1 = 'name'
 // $2 = linuxVMExtensions
 // $3 = 'name'
 // $4 = 'fileUris'
@@ -31,3 +31,4 @@ resource linuxVMExtensions 'Microsoft.Compute/virtualMachines/extensions@2019-07
   }
 }
 // Insert snippet here
+

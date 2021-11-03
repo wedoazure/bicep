@@ -1,4 +1,4 @@
-﻿// $1 = mediaServices
+// $1 = mediaServices
 // $2 = 'name'
 // $3 = 'storageAccount.id'
 // $4 = Primary
@@ -18,3 +18,4 @@ resource mediaServices 'Microsoft.Media/mediaServices@2020-05-01' = {
   }
 }
 // Insert snippet here
+

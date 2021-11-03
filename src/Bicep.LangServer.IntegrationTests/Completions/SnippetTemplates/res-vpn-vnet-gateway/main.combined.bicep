@@ -1,4 +1,4 @@
-﻿// $1 = virtualNetworkGateway
+// $1 = virtualNetworkGateway
 // $2 = 'name'
 // $3 = 'name'
 // $4 = 'subnet.id'
@@ -39,3 +39,4 @@ resource virtualNetworkGateway 'Microsoft.Network/virtualNetworkGateways@2020-11
   }
 }
 // Insert snippet here
+

@@ -1,4 +1,4 @@
-﻿// $1 = hostPool
+// $1 = hostPool
 // $2 = 'name'
 // $3 = 'friendlyName'
 // $4 = 'Pooled'
@@ -18,3 +18,4 @@ resource hostPool 'Microsoft.DesktopVirtualization/hostpools@2019-12-10-preview'
   }
 }
 // Insert snippet here
+

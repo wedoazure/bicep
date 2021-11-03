@@ -1,9 +1,9 @@
-﻿// $1 = logicAppConnector
+// $1 = logicAppConnector
 // $2 = 'name'
 // $3 = 'name'
 // $4 = 'logicAppConnectorApi'
 
-s
+param location string
 
 resource logicAppConnector 'Microsoft.Web/connections@2015-08-01-preview' = {
   name: 'name'
@@ -16,3 +16,4 @@ resource logicAppConnector 'Microsoft.Web/connections@2015-08-01-preview' = {
   }
 }
 // Insert snippet here
+

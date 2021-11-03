@@ -1,4 +1,4 @@
-﻿// $1 = ubuntuVM
+// $1 = ubuntuVM
 // $2 = 'name'
 // $3 = 'computerName'
 // $4 = adminUsername
@@ -51,3 +51,4 @@ resource ubuntuVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
   }
 }
 // Insert snippet here
+

@@ -1,4 +1,4 @@
-﻿// $1 = networkSecurityGroup
+// $1 = networkSecurityGroup
 // $2 = 'name'
 // $3 = 'nsgRule'
 // $4 = 'description'
@@ -36,3 +36,4 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2019-11-0
   }
 }
 // Insert snippet here
+

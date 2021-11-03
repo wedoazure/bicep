@@ -1,4 +1,4 @@
-﻿// $1 = containerRegistry
+// $1 = containerRegistry
 // $2 = 'name'
 // $3 = 'Basic'
 // $4 = false
@@ -16,3 +16,4 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-06-01-pr
   }
 }
 // Insert snippet here
+

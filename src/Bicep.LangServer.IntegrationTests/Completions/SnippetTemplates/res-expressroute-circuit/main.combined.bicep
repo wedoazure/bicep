@@ -1,4 +1,4 @@
-﻿// $1 = expressRouteCircuit
+// $1 = expressRouteCircuit
 // $2 = 'name'
 // $3 = 'MeteredData'
 // $4 = 'Local'
@@ -13,18 +13,19 @@ param location string
 resource expressRouteCircuit 'Microsoft.Network/expressRouteCircuits@2020-11-01' = {
   name: 'name'
   location: location
-  sku: {
+  sku:{
     family: 'MeteredData'
     tier: 'Local'
     name: 'Local_MeteredData'
   }
-  properties: {
-    serviceProviderProperties: {
+  properties:{
+    serviceProviderProperties:{
       bandwidthInMbps: 50
-      peeringLocation: 'Amsterdam'
+        peeringLocation: 'Amsterdam'
       serviceProviderName: 'Telia Carrier'
     }
-    allowClassicOperations: false
+    allowClassicOperations:false
   }
 }
 // Insert snippet here
+

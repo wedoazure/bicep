@@ -1,4 +1,4 @@
-﻿// $1 = windowsVMDiagnostics
+// $1 = windowsVMDiagnostics
 // $2 = 'windowsVM/Diagnostics'
 // $3 = 'storageAccount'
 // $4 = 'storageAccountName'
@@ -27,3 +27,4 @@ resource windowsVMDiagnostics 'Microsoft.Compute/virtualMachines/extensions@2020
   }
 }
 // Insert snippet here
+

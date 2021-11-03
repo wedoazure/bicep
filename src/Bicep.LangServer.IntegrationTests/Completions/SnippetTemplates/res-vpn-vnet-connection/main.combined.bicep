@@ -1,4 +1,4 @@
-﻿// $1 = vpnVnetConnection
+// $1 = vpnVnetConnection
 // $2 = 'name'
 // $3 = 'virtualNetworkGateways.id'
 // $4 = 'localNetworkGateways.id'
@@ -14,11 +14,11 @@ resource vpnVnetConnection 'Microsoft.Network/connections@2020-11-01' = {
   properties: {
     virtualNetworkGateway1: {
       id: 'virtualNetworkGateways.id'
-      properties: {}
+      properties:{}
     }
     localNetworkGateway2: {
       id: 'localNetworkGateways.id'
-      properties: {}
+      properties:{}
     }
     connectionType: 'IPsec'
     routingWeight: 0
@@ -26,3 +26,4 @@ resource vpnVnetConnection 'Microsoft.Network/connections@2020-11-01' = {
   }
 }
 // Insert snippet here
+

@@ -1,4 +1,4 @@
-﻿// $1 = logicApp
+// $1 = logicApp
 // $2 = 'name'
 // $3 = 'logicapp.json'
 
@@ -12,3 +12,4 @@ resource logicApp 'Microsoft.Logic/workflows@2019-05-01' = {
   }
 }
 // Insert snippet here
+

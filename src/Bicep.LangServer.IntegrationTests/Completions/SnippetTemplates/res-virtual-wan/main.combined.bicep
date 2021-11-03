@@ -1,4 +1,4 @@
-﻿// $1 = virtualWan
+// $1 = virtualWan
 // $2 = 'name'
 // $3 = 'Standard'
 // $4 = 'None'
@@ -17,3 +17,4 @@ resource virtualWan 'Microsoft.Network/virtualWans@2020-07-01' = {
   })
 }
 // Insert snippet here
+

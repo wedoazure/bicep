@@ -1,4 +1,4 @@
-﻿// $1 = appInsightsAlertRules
+// $1 = appInsightsAlertRules
 // $2 = 'name'
 // $3 = 'name'
 // $4 = 'description'
@@ -34,3 +34,4 @@ resource appInsightsAlertRules 'Microsoft.Insights/alertrules@2016-03-01' = {
   }
 }
 // Insert snippet here
+

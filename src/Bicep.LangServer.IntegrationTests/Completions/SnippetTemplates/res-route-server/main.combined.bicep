@@ -1,4 +1,4 @@
-﻿// $1 = 'name'
+// $1 = 'name'
 // $2 = ipConfiguration
 // $3 = 'name'
 // $4 = 'subnet.id'
@@ -23,3 +23,4 @@ resource ipConfiguration 'Microsoft.Network/virtualHubs/ipConfigurations@2021-02
   }
 }
 // Insert snippet here
+

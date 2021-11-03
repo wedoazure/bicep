@@ -1,4 +1,4 @@
-﻿// $1 = 'name'
+// $1 = 'name'
 // $2 = windowsVMGuestConfigExtension
 
 param location string
@@ -7,7 +7,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2020-12-01' = {
   name: 'name'
   location: location
   identity: {
-    type: 'SystemAssigned'
+    type:'SystemAssigned'
   }
 }
 
@@ -26,3 +26,4 @@ resource windowsVMGuestConfigExtension 'Microsoft.Compute/virtualMachines/extens
   }
 }
 // Insert snippet here
+

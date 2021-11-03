@@ -1,4 +1,4 @@
-﻿// $1 = containerGroup
+// $1 = containerGroup
 // $2 = 'name'
 // $3 = 'containername'
 // $4 = 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
@@ -49,3 +49,4 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-03-01'
   }
 }
 // Insert snippet here
+

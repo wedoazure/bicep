@@ -1,4 +1,4 @@
-﻿// $1 = 'name'
+// $1 = 'name'
 // $2 = webApplicationExtension
 // $3 = 'packageUri'
 // $4 = 'connectionString'
@@ -24,3 +24,4 @@ resource webApplicationExtension 'Microsoft.Web/sites/extensions@2020-12-01' = {
   }
 }
 // Insert snippet here
+

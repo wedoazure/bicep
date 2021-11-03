@@ -1,4 +1,4 @@
-﻿// $1 = windowsVM
+// $1 = windowsVM
 // $2 = 'name'
 // $3 = 'computerName'
 // $4 = adminUsername
@@ -45,9 +45,10 @@ resource windowsVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
     diagnosticsProfile: {
       bootDiagnostics: {
         enabled: true
-        storageUri: 'storageUri'
+        storageUri:  'storageUri'
       }
     }
   }
 }
 // Insert snippet here
+

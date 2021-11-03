@@ -1,4 +1,4 @@
-﻿// $1 = expressRouteGateways
+// $1 = expressRouteGateways
 // $2 = 'name'
 // $3 = 'virtualHub.id'
 // $4 = 1
@@ -22,3 +22,4 @@ resource expressRouteGateways 'Microsoft.Network/expressRouteGateways@2021-02-01
   }
 }
 // Insert snippet here
+

@@ -1,4 +1,4 @@
-﻿// $1 = appInsightsAutoScaleSettings
+// $1 = appInsightsAutoScaleSettings
 // $2 = 'name'
 // $3 = web
 // $4 = appServiceId
@@ -49,7 +49,7 @@ resource appInsightsAutoScaleSettings 'Microsoft.Insights/autoscalesettings@2015
             scaleAction: {
               direction: 'Increase'
               type: 'ChangeCount'
-              value: 'value'
+              value:  'value'
               cooldown: 'PT10M'
             }
           }
@@ -79,3 +79,4 @@ resource appInsightsAutoScaleSettings 'Microsoft.Insights/autoscalesettings@2015
   }
 }
 // Insert snippet here
+

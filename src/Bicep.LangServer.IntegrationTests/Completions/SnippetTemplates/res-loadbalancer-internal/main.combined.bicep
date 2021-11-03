@@ -1,4 +1,4 @@
-﻿// $1 = loadBalancerInternal
+// $1 = loadBalancerInternal
 // $2 = 'name'
 // $3 = 'name'
 // $4 = '0.0.0.0'
@@ -73,3 +73,4 @@ resource loadBalancerInternal 'Microsoft.Network/loadBalancers@2020-11-01' = {
   }
 }
 // Insert snippet here
+

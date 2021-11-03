@@ -1,4 +1,4 @@
-﻿// $1 = networkInterface
+// $1 = networkInterface
 // $2 = 'name'
 // $3 = 'name'
 // $4 = Dynamic
@@ -24,3 +24,4 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2020-11-01' = {
   }
 }
 // Insert snippet here
+

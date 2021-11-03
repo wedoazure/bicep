@@ -1,4 +1,4 @@
-﻿// $1 = automationAccount
+// $1 = automationAccount
 // $2 = 'name'
 // $3 = 'Basic'
 
@@ -14,3 +14,4 @@ resource automationAccount 'Microsoft.Automation/automationAccounts@2019-06-01' 
   }
 }
 // Insert snippet here
+

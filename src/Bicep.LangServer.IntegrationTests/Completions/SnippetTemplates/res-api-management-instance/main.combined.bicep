@@ -1,4 +1,4 @@
-﻿// $1 = apiManagementInstance
+// $1 = apiManagementInstance
 // $2 = 'name'
 // $3 = 1
 // $4 = 'Developer'
@@ -11,14 +11,15 @@ param location string
 resource apiManagementInstance 'Microsoft.ApiManagement/service@2020-12-01' = {
   name: 'name'
   location: location
-  sku: {
+  sku:{
     capacity: 1
     name: 'Developer'
   }
-  properties: {
+  properties:{
     virtualNetworkType: 'None'
     publisherEmail: 'publisherEmail@contoso.com'
     publisherName: 'publisherName'
   }
 }
 // Insert snippet here
+

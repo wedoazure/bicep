@@ -1,4 +1,4 @@
-﻿// $1 = 'name'
+// $1 = 'name'
 // $2 = dnsRecord
 // $3 = A
 // $4 = 'name'
@@ -20,3 +20,4 @@ resource dnsRecord 'Microsoft.Network/dnsZones/A@2018-05-01' = {
   }
 }
 // Insert snippet here
+

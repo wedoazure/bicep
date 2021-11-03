@@ -1,4 +1,4 @@
-﻿// $1 = routeTable
+// $1 = routeTable
 // $2 = 'name'
 // $3 = 'name'
 // $4 = 'destinationCIDR'
@@ -26,3 +26,4 @@ resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
   }
 }
 // Insert snippet here
+

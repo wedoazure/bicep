@@ -1,4 +1,4 @@
-﻿// $1 = aksCluster
+// $1 = aksCluster
 // $2 = 'name'
 // $3 = 1.19.7
 // $4 = 'dnsPrefix'
@@ -42,3 +42,4 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2021-03-01' = {
   }
 }
 // Insert snippet here
+

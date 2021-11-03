@@ -1,4 +1,4 @@
-﻿// $1 = 'name'
+// $1 = 'name'
 // $2 = windowsVMExtensions
 // $3 = 'name'
 // $4 = 'fileUris'
@@ -31,3 +31,4 @@ resource windowsVMExtensions 'Microsoft.Compute/virtualMachines/extensions@2020-
   }
 }
 // Insert snippet here
+

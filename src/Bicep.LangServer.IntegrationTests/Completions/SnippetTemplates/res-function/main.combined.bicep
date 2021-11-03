@@ -1,4 +1,4 @@
-﻿// $1 = azureFunction
+// $1 = azureFunction
 // $2 = 'name'
 // $3 = 'serverfarms.id'
 // $4 = storageAccountName1
@@ -54,3 +54,4 @@ resource azureFunction 'Microsoft.Web/sites@2020-12-01' = {
   }
 }
 // Insert snippet here
+

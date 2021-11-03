@@ -1,4 +1,4 @@
-﻿// $1 = publicIPPrefix
+// $1 = publicIPPrefix
 // $2 = 'name'
 // $3 = 28
 
@@ -16,3 +16,4 @@ resource publicIPPrefix 'Microsoft.Network/publicIPPrefixes@2019-11-01' = {
   }
 }
 // Insert snippet here
+

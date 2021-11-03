@@ -1,4 +1,4 @@
-﻿// $1 = applicationGroup
+// $1 = applicationGroup
 // $2 = 'name'
 // $3 = 'friendlyName'
 // $4 = 'Desktop'
@@ -16,3 +16,4 @@ resource applicationGroup 'Microsoft.DesktopVirtualization/applicationgroups@201
   }
 }
 // Insert snippet here
+

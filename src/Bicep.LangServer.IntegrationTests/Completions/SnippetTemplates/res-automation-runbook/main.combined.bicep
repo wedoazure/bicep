@@ -1,4 +1,4 @@
-﻿// $1 = 'name'
+// $1 = 'name'
 // $2 = automationRunbook
 // $3 = 'name'
 // $4 = true
@@ -30,3 +30,4 @@ resource automationRunbook 'Microsoft.Automation/automationAccounts/runbooks@201
   }
 }
 // Insert snippet here
+

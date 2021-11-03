@@ -1,4 +1,4 @@
-﻿// $1 = applicationGatewayFirewall
+// $1 = applicationGatewayFirewall
 // $2 = 'name'
 // $3 = true
 // $4 = 128
@@ -32,3 +32,4 @@ resource applicationGatewayFirewall 'Microsoft.Network/ApplicationGatewayWebAppl
   }
 }
 // Insert snippet here
+

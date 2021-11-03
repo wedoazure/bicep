@@ -1,4 +1,4 @@
-﻿// $1 = sharedImageGallery
+// $1 = sharedImageGallery
 // $2 = 'name'
 // $3 = 'description'
 
@@ -12,3 +12,4 @@ resource sharedImageGallery 'Microsoft.Compute/galleries@2020-09-30' = {
   }
 }
 // Insert snippet here
+

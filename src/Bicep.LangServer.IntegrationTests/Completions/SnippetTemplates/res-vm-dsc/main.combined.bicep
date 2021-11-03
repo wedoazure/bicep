@@ -1,4 +1,4 @@
-﻿// $1 = 'name'
+// $1 = 'name'
 // $2 = windowsVMDsc
 // $3 = 'name'
 // $4 = 'modulesUrl'
@@ -29,3 +29,4 @@ resource windowsVMDsc 'Microsoft.Compute/virtualMachines/extensions@2020-12-01' 
   }
 }
 // Insert snippet here
+

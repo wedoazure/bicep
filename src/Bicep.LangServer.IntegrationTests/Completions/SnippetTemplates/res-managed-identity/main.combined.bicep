@@ -1,4 +1,4 @@
-﻿// $1 = managedIdentity
+// $1 = managedIdentity
 // $2 = 'name'
 
 param location string
@@ -8,3 +8,4 @@ resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-
   location: location
 }
 // Insert snippet here
+

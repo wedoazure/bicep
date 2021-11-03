@@ -1,4 +1,4 @@
-﻿// $1 = applicationGateway
+// $1 = applicationGateway
 // $2 = 'name'
 // $3 = Standard_Small
 // $4 = Standard
@@ -112,3 +112,4 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2020-11-01' =
   }
 }
 // Insert snippet here
+

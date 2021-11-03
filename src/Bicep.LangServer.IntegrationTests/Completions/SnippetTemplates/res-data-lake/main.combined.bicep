@@ -1,4 +1,4 @@
-﻿// $1 = dataLakeStore
+// $1 = dataLakeStore
 // $2 = 'name'
 // $3 = 'Consumption'
 // $4 = 'Enabled'
@@ -14,3 +14,4 @@ resource dataLakeStore 'Microsoft.DataLakeStore/accounts@2016-11-01' = {
   }
 }
 // Insert snippet here
+

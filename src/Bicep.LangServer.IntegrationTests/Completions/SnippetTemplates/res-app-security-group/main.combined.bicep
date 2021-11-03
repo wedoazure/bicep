@@ -1,4 +1,4 @@
-﻿// $1 = applicationSecurityGroup
+// $1 = applicationSecurityGroup
 // $2 = 'name'
 
 param location string
@@ -8,3 +8,4 @@ resource applicationSecurityGroup 'Microsoft.Network/applicationSecurityGroups@2
   location: location
 }
 // Insert snippet here
+

@@ -1,4 +1,4 @@
-﻿// $1 = workSpace
+// $1 = workSpace
 // $2 = 'name'
 // $3 = 'friendlyName'
 
@@ -12,3 +12,4 @@ resource workSpace 'Microsoft.DesktopVirtualization/workspaces@2019-12-10-previe
   }
 }
 // Insert snippet here
+

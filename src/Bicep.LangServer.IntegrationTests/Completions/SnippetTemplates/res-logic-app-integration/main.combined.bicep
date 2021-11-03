@@ -1,4 +1,4 @@
-﻿// $1 = logicApp
+// $1 = logicApp
 // $2 = 'name'
 
 param location string
@@ -8,3 +8,4 @@ resource logicApp 'Microsoft.Logic/integrationAccounts@2016-06-01' = {
   location: location
 }
 // Insert snippet here
+

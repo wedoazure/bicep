@@ -1,4 +1,4 @@
-﻿// $1 = 'name'
+// $1 = 'name'
 // $2 = 'administratorLogin'
 // $3 = 'administratorLoginPassword'
 // $4 = sqlServerFirewallRules
@@ -26,3 +26,4 @@ resource sqlServerFirewallRules 'Microsoft.Sql/servers/firewallRules@2020-11-01-
   }
 }
 // Insert snippet here
+

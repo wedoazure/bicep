@@ -1,4 +1,4 @@
-﻿// $1 = publicIPAddress
+// $1 = publicIPAddress
 // $2 = 'name'
 // $3 = 'dnsName'
 
@@ -15,3 +15,4 @@ resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
   }
 }
 // Insert snippet here
+

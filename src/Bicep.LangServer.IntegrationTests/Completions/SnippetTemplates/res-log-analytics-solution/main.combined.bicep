@@ -1,4 +1,4 @@
-﻿// $1 = logAnalyticsSolution
+// $1 = logAnalyticsSolution
 // $2 = 'name'
 // $3 = 'operationalInsightsWorkspace.id'
 // $4 = 'view.id'
@@ -26,3 +26,4 @@ resource logAnalyticsSolution 'Microsoft.OperationsManagement/solutions@2015-11-
   }
 }
 // Insert snippet here
+
