@@ -323,6 +323,12 @@
         "type": "Transitive",
         "resolved": "4.5.4",
         "contentHash": "zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg=="
+      },
+      "Azure.Bicep.Types.K8s": {
+        "type": "Project",
+        "dependencies": {
+          "Azure.Bicep.Types": "0.1.304"
+        }
       }
     },
     ".NETCoreApp,Version=v5.0/linux-musl-x64": {

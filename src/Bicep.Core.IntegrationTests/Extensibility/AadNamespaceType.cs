@@ -9,6 +9,7 @@ using Bicep.Core.Semantics;
 
 namespace Bicep.Core.IntegrationTests.Extensibility
 {
+
     public static class AadNamespaceType
     {
         public const string BuiltInName = "aad";

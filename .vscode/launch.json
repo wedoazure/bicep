@@ -11,7 +11,9 @@
                 "--extensionDevelopmentPath=${workspaceRoot}/src/vscode-bicep"
             ],
             "env": {
-                "BICEP_TRACING_ENABLED": "true"
+                "BICEP_TRACING_ENABLED": "true",
+                "BICEP_IMPORTS_ENABLED_EXPERIMENTAL": "true",
+                "BICEP_SYMBOLIC_NAME_CODEGEN_EXPERIMENTAL": "true"
             },
             "stopOnEntry": false,
             "sourceMaps": true,
@@ -29,7 +31,9 @@
                 "${file}"
             ],
             "env": {
-                "BICEP_TRACING_ENABLED": "true"
+                "BICEP_TRACING_ENABLED": "true",
+                "BICEP_IMPORTS_ENABLED_EXPERIMENTAL": "true",
+                "BICEP_SYMBOLIC_NAME_CODEGEN_EXPERIMENTAL": "true"
             },
             "cwd": "${workspaceFolder}/src/Bicep.Cli",
             "console": "internalConsole",

@@ -1,0 +1,3 @@
+[submodule "bicep-types-k8s"]
+	path = bicep-types-k8s
+	url = https://github.com/Azure/bicep-types-k8s
